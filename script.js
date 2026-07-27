@@ -1,4 +1,4 @@
-// ==================== 高中物理 · 逻辑脉络图 ====================
+﻿// ==================== 高中物理 · 逻辑脉络图 ====================
 // 核心原则：理性 · 从容 · 长期主义
 // 所有逻辑树数据硬编码在前端，运行时零API消耗
 
@@ -760,9 +760,7 @@ function searchKnowledgeNode(nodeName, biliKeywords) {
                 if (hint) hint.textContent = "未找到「" + nodeName + "」相关视频，试试其他关键词";
             }
         })
-        .catch(function() {
-            if (hint) hint.textContent = "搜索失败，请检查服务器是否运行";
-        });
+        .catch(function(){fetch("https://api.allorigins.win/raw?url="+encodeURIComponent("https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword="+encodeURIComponent(biliKeywords+" 高中物理")+"&page=1")).then(function(r){return r.json();}).then(function(d){if(d.code===0&&d.data&&d.data.result&&d.data.result.length>0){var bad=["搞笑","鬼畜","游戏","娱乐","网红","吃鸡","王者","抖音","快手","电影","动漫","我的世界","Minecraft","模组","原神","英雄联盟","第五人格"];var its=d.data.result.filter(function(it){var t=(it.title||"").replace(/<[^>]+>/g,"");for(var i=0;i<bad.length;i++){if(t.indexOf(bad[i])>=0)return false;}return true;});its.sort(function(a,b){return(b.play||0)-(a.play||0)||(b.danmaku||0)-(a.danmaku||0);});var vs=its.slice(0,20).map(function(it){return{id:it.bvid||"",title:(it.title||"").replace(/<[^>]+>/g,""),cover:it.pic||"",author:it.author||"未知",url:"https://www.bilibili.com/video/"+(it.bvid||""),view:it.play||0,duration:it.duration||"00:00"};});if(hint)hint.textContent="找到 "+vs.length+" 个视频";if(window.renderVideos)renderVideos(vs);}}).catch(function(){fetch("https://corsproxy.io/?url="+encodeURIComponent("https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword="+encodeURIComponent(biliKeywords+" 高中物理")+"&page=1")).then(function(r2){return r2.json();}).then(function(d2){if(d2.code===0&&d2.data&&d2.data.result&&d2.data.result.length>0){var bad2=["搞笑","鬼畜","游戏","娱乐","网红","吃鸡","王者","抖音","快手","电影","动漫","我的世界","Minecraft","模组","原神","英雄联盟","第五人格"];var its2=d2.data.result.filter(function(it){var t=(it.title||"").replace(/<[^>]+>/g,"");for(var i=0;i<bad2.length;i++){if(t.indexOf(bad2[i])>=0)return false;}return true;});its2.sort(function(a,b){return(b.play||0)-(a.play||0)||(b.danmaku||0)-(a.danmaku||0);});var vs2=its2.slice(0,20).map(function(it){return{id:it.bvid||"",title:(it.title||"").replace(/<[^>]+>/g,""),cover:it.pic||"",author:it.author||"未知",url:"https://www.bilibili.com/video/"+(it.bvid||""),view:it.play||0,duration:it.duration||"00:00"};});if(hint)hint.textContent="找到 "+vs2.length+" 个视频";if(window.renderVideos)renderVideos(vs2);}}).catch(function(){if(hint)hint.textContent="搜索失败";});});});
 }
 
 // 初始化知识框架
@@ -915,5 +913,5 @@ try{updatePersonalityBadge();}catch(e){}
 // === 物理名言 ===
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
-function showNextQuote(){var qt=document.getElementById("quoteText");if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}
-setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+
