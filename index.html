@@ -1,60 +1,181 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>牛顿第二定律急诊室</title>
+<title>高中物理 · 逻辑脉络图</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- 头部 -->
 <div class="header">
-    <h1>🏥 牛顿第二定律急诊室</h1>
-    <p>你的物理困惑，AI 来诊断</p>
+    <div class="header-main">
+        <div class="header-left">
+            <h1>🧭 高中物理 · 逻辑脉络图</h1>
+            <div class="subtitle">从框架入手，从容学物理</div>
+        </div>
+        <div class="header-right">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="输入知识点名称" />
+                <button id="searchBtn" onclick="handleSearch()">搜索</button>
+            </div>
+        </div>
+    </div>
+    <div class="greeting-bar" id="greeting"></div>
+<div class="personality-badge" id="personalityBadge"></div>
+    <div class="quote-bar" id="quoteText">载入中...</div>
 </div>
-
-<div class="container">
-
-    <!-- 物理名言轮播 -->
-    <div class="quote-box" id="quoteBox">
-        <div class="quote-text" id="quoteText">加载中...</div>
-    </div>
-
-    <!-- 输入区域 -->
-    <div class="input-section">
-        <textarea id="questionInput" placeholder="请描述你在牛顿第二定律上的具体困惑，例如：整体法和隔离法怎么区分？"></textarea>
-        <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">立即诊断</button>
-    </div>
-
-    <!-- 加载 -->
-    <div class="loading" id="loadingIndicator">
-        <div class="spinner"></div>
-        <p>正在诊断你的问题并搜索相关视频...</p>
-    </div>
-
-    <!-- 错误 -->
-    <div class="error-msg" id="errorMsg"></div>
-
-    <!-- 诊断结果 -->
-    <div id="resultArea" style="display:none">
-        <div id="diagnosisCard"></div>
-    </div>
-
-    <!-- 视频推荐 -->
-    <div class="video-section" id="videoSection" style="display:none">
-        <h2>📺 根据你的困惑，为你筛选以下视频</h2>
-        <div class="video-grid" id="videoGrid"></div>
-    </div>
-
+<div class="main-container">
+<div class="view-toggle">
+    <span class="view-tab" id="viewTabTree" onclick="toggleView('tree')">📚 知识框架</span>
+    <span class="view-tab" id="viewTabLogic" onclick="toggleView('logic')">🧩 解题脉络</span>
 </div>
-
-<!-- 底部合规声明 -->
+<div id="treeView">
+    <div class="tree-area" style="margin-bottom:16px">
+        <div class="tree-header">
+            <div class="tree-intro">📚 高中物理完整知识体系</div>
+            <div class="tree-note">点击分支展开↓ 点击知识点节点 → 自动搜索B站讲解视频</div>
+        </div>
+        <div class="knowledge-tree-container" id="knowledgeTreeContainer"></div>
+    </div>
+</div>
+<div id="logicView" style="display:none">
+    <div class="module-nav" id="moduleNav"></div>
+    <div class="tree-area">
+        <div class="tree-header">
+            <div class="tree-intro" id="logicIntro">选择模块，查看解题逻辑脉络</div>
+            <div class="tree-note" id="logicNote">解题思路不唯一，此路径基于通用模型总结。</div>
+        </div>
+        <div class="network-container">
+            <svg class="network-svg" id="networkSvg"></svg>
+            <div class="network-nodes" id="networkNodes"></div>
+        </div>
+        <div class="path-toggle" id="pathToggle" onclick="togglePath()" style="display:none">
+            <span id="pathLabel">切换至另一条解题路径</span>
+        </div>
+    </div>
+</div>
+<div class="feynman-overlay" id="feynmanOverlay" onclick="closeFeynmanModal()"></div>
+<div class="feynman-modal" id="feynmanModal">
+<div class="feynman-header"><span>🎤 讲给自己听</span><span class="feynman-close" onclick="closeFeynmanModal()">✕</span></div>
+<div class="feynman-body">
+<div class="feynman-step-name" id="feynmanStepName"></div>
+<div class="feynman-prompt">用你自己的话，把这个步骤的核心逻辑写出来（哪怕只有一句话）。</div>
+<textarea class="feynman-textarea" id="feynmanText" placeholder="把刚理解的内容写在这里..."></textarea>
+<div class="feynman-saved" id="feynmanSavedInfo"></div>
+<input type="hidden" id="feynmanStepId" />
+<button class="feynman-submit" onclick="submitFeynman()">✅ 提交</button>
+</div></div>
+<div class="video-area" id="videoArea">
+    <div class="video-hint" id="videoHint">点击知识点节点或逻辑步骤，为你推荐B站讲解视频</div>
+    <div class="video-grid" id="videoGrid"></div>
+</div>
+</div>
 <div class="footer">
-    本网站仅提供公开视频链接导航，所有内容版权归原作者及 Bilibili 平台所有。<br>
-    如涉及侵权，请联系处理。
+    <div class="footer-row"><span id="footprint">📖 暂无浏览记录</span></div>
+    <div class="footer-row">📘 本逻辑框架参考人教版高中物理教材目录结构及通用解题模型归纳。</div>
+    <div class="footer-row">本网站仅提供公开视频链接导航，所有内容版权归原作者及 Bilibili 平台所有。</div>
+    <div class="footer-row"><a href="mailto:contact@yourdomain.com?subject=物理脉络图-反馈">📝 对内容有建议？提交反馈</a></div>
+    <div class="footer-row footer-note">理性 · 从容 · 长期主义</div>
 </div>
-
+<script>
+var KNOWLEDGE_TREE = {branches:[
+{branch:"运动的描述",emoji:"📐",modules:[
+{name:"基本概念",bili:"位移 速度 加速度",points:[
+{name:"质点与理想模型",bili:"质点 理想模型"},{name:"参考系与坐标系",bili:"参考系 坐标系"},{name:"时间与时刻",bili:"时间 时刻 区别"},{name:"位移与路程",bili:"位移 路程 区别"},{name:"速度与速率",bili:"速度 速率 平均速度"},{name:"加速度",bili:"加速度 概念"},{name:"速度变化量Δv",bili:"速度变化量 Δv"}]},
+{name:"匀变速直线运动",bili:"匀变速 公式",points:[
+{name:"速度公式v=v₀+at",bili:"v=v₀+at"},{name:"位移公式x=v₀t+½at²",bili:"x=v₀t+½at²"},{name:"速度位移公式v²-v₀²=2ax",bili:"v²-v₀²=2ax"},{name:"自由落体",bili:"自由落体 g=10"},{name:"竖直上抛",bili:"竖直上抛 对称"},{name:"追及相遇",bili:"追及 相遇"},{name:"比例法与逆向思维",bili:"比例法 逆向 匀变速"}]}]},
+{branch:"牛顿运动定律",emoji:"🚀",modules:[
+{name:"牛顿定律核心",bili:"牛顿 F=ma 惯性",points:[
+{name:"牛顿第一定律(惯性定律)",bili:"牛顿第一定律 惯性"},{name:"牛顿第二定律F=ma",bili:"F=ma 牛顿第二定律"},{name:"牛顿第二定律瞬时性",bili:"瞬时性 突变"},{name:"牛顿第二定律矢量性",bili:"矢量性 方向"},{name:"牛顿第三定律",bili:"牛顿第三定律 反作用力"}]},
+{name:"牛顿定律应用",bili:"超重 传送带 连接体",points:[
+{name:"超重与失重",bili:"超重 失重"},{name:"整体法与隔离法",bili:"整体法 隔离法"},{name:"连接体问题",bili:"连接体 系统"},{name:"传送带模型",bili:"传送带"},{name:"滑块木板模型",bili:"滑块 木板"},{name:"临界极值问题",bili:"临界 极值"}]}]},
+{branch:"受力分析与平衡",emoji:"⚖️",modules:[
+{name:"常见力",bili:"重力 弹力 摩擦力",points:[
+{name:"重力与重心",bili:"重力 重心"},{name:"弹力方向判断",bili:"弹力 方向"},{name:"胡克定律F=kx",bili:"胡克定律 F=kx"},{name:"静摩擦力",bili:"静摩擦力"},{name:"滑动摩擦力f=μN",bili:"滑动摩擦力 f=μN"}]},
+{name:"力的合成与分解",bili:"平行四边形 正交分解",points:[
+{name:"平行四边形定则",bili:"平行四边形"},{name:"力的分解",bili:"力的分解 效果"},{name:"正交分解法",bili:"正交分解"},{name:"绳杆弹力方向",bili:"轻绳 轻杆"}]},
+{name:"平衡问题",bili:"共点力平衡 动态平衡",points:[
+{name:"共点力平衡F合=0",bili:"共点力平衡"},{name:"三力平衡拉密定理",bili:"三力 拉密"},{name:"动态平衡图解法",bili:"动态平衡 图解法"}]}]},
+{branch:"动量与冲量",emoji:"💥",modules:[
+{name:"动量基础",bili:"动量 冲量 动量定理",points:[
+{name:"动量p=mv",bili:"动量 p=mv"},{name:"冲量I=Ft",bili:"冲量 I=Ft"},{name:"动量定理Ft=Δp",bili:"动量定理 Ft=Δp"}]},
+{name:"动量守恒与应用",bili:"动量守恒 碰撞",points:[
+{name:"动量守恒条件",bili:"动量守恒 条件"},{name:"弹性碰撞",bili:"弹性碰撞"},{name:"非弹性碰撞",bili:"非弹性碰撞"},{name:"完全非弹性碰撞",bili:"完全非弹性 共速"},{name:"爆炸与反冲",bili:"爆炸 反冲"},{name:"人船模型",bili:"人船模型"},{name:"子弹打木块",bili:"子弹 木块 动量"}]}]},
+{branch:"机械能",emoji:"⚡",modules:[
+{name:"功与功率",bili:"功 功率 机车",points:[
+{name:"功W=FScosθ",bili:"功 W=FScosθ"},{name:"正功与负功",bili:"正功 负功"},{name:"功率P=Fv",bili:"功率 P=Fv"},{name:"机车恒定功率启动",bili:"机车启动 恒定功率"},{name:"机车恒定加速度启动",bili:"机车 恒定牵引力"}]},
+{name:"动能定理与机械能守恒",bili:"动能定理 机械能守恒",points:[
+{name:"动能Ek=½mv²",bili:"动能 Ek=½mv²"},{name:"重力势能Ep=mgh",bili:"重力势能 Ep=mgh"},{name:"弹性势能Ep=½kx²",bili:"弹性势能 Ep=½kx²"},{name:"动能定理W合=ΔEk",bili:"动能定理 W合=ΔEk"},{name:"机械能守恒定律",bili:"机械能守恒"},{name:"功能关系",bili:"功能关系 能量转化"},{name:"能量守恒定律",bili:"能量守恒"}]}]},
+{branch:"曲线运动与圆周",emoji:"🌀",modules:[
+{name:"曲线运动",bili:"平抛 合成分解",points:[
+{name:"曲线运动条件",bili:"曲线运动 条件"},{name:"运动的合成与分解",bili:"合成 分解"},{name:"渡河问题",bili:"渡河 最短"},{name:"关联速度",bili:"关联速度 绳 杆"},{name:"平抛运动",bili:"平抛运动"},{name:"斜抛运动",bili:"斜抛 射程"}]},
+{name:"圆周运动",bili:"圆周 向心力 临界",points:[
+{name:"线速度与角速度",bili:"线速度 角速度 v=ωr"},{name:"向心加速度a=v²/r",bili:"向心加速度"},{name:"向心力F=mv²/r",bili:"向心力"},{name:"水平面圆周运动",bili:"水平面 圆周"},{name:"竖直面轻绳模型",bili:"轻绳 圆周 临界"},{name:"竖直面轻杆模型",bili:"轻杆 圆周"},{name:"离心运动",bili:"离心"}]}]},
+{branch:"万有引力与航天",emoji:"🌍",modules:[
+{name:"万有引力定律",bili:"万有引力 开普勒",points:[
+{name:"万有引力F=GMm/r²",bili:"万有引力"},{name:"黄金代换GM=gR²",bili:"黄金代换"},{name:"开普勒三大定律",bili:"开普勒"}]},
+{name:"天体运动",bili:"卫星 宇宙速度 变轨",points:[
+{name:"卫星运动规律",bili:"卫星 环绕"},{name:"高轨低速长周期",bili:"高轨 低速"},{name:"第一宇宙速度",bili:"第一宇宙速度"},{name:"第二第三宇宙速度",bili:"第二宇宙速度"},{name:"地球同步卫星",bili:"同步卫星"},{name:"卫星变轨",bili:"变轨 离心"},{name:"双星问题",bili:"双星 多星"}]}]},
+{branch:"振动与波",emoji:"🌊",modules:[
+{name:"机械振动",bili:"简谐运动 单摆",points:[
+{name:"简谐运动F=-kx",bili:"简谐运动 F=-kx"},{name:"弹簧振子",bili:"弹簧振子"},{name:"单摆周期T=2π√(L/g)",bili:"单摆 T=2π√(L/g)"},{name:"振动图像",bili:"振动图像 x-t"},{name:"阻尼与受迫振动",bili:"阻尼 受迫 共振"}]},
+{name:"机械波",bili:"波 干涉 衍射 多普勒",points:[
+{name:"横波与纵波",bili:"横波 纵波"},{name:"波速v=λf",bili:"波速 v=λf"},{name:"波的图像",bili:"波的图像 y-x"},{name:"波的干涉",bili:"干涉 加强 减弱"},{name:"波的衍射",bili:"衍射"},{name:"多普勒效应",bili:"多普勒"}]}]},
+{branch:"静电场",emoji:"⚡",modules:[
+{name:"电场基本概念",bili:"电场强度 电势",points:[
+{name:"库仑定律F=kQq/r²",bili:"库仑定律"},{name:"电场强度E=F/q",bili:"电场强度"},{name:"电场线",bili:"电场线"},{name:"匀强电场E=U/d",bili:"匀强电场"},{name:"电势与电势差",bili:"电势 电势差"},{name:"电势能Ep=qφ",bili:"电势能"},{name:"等势面",bili:"等势面"}]},
+{name:"电场应用",bili:"电容器 带电粒子 电场",points:[
+{name:"电容器C=Q/U",bili:"电容器 C=Q/U"},{name:"带电粒子电场加速",bili:"电场加速"},{name:"带电粒子电场偏转",bili:"电场偏转 类平抛"},{name:"静电屏蔽",bili:"静电屏蔽"}]}]},
+{branch:"恒定电流",emoji:"🔌",modules:[
+{name:"电路基础",bili:"欧姆定律 电阻 串并联",points:[
+{name:"欧姆定律I=U/R",bili:"欧姆定律"},{name:"电阻定律R=ρL/S",bili:"电阻定律"},{name:"串联电路",bili:"串联"},{name:"并联电路",bili:"并联"},{name:"电功与电功率",bili:"电功率 P=UI"},{name:"焦耳定律Q=I²Rt",bili:"焦耳定律"}]},
+{name:"闭合电路",bili:"电动势 内阻",points:[
+{name:"电动势与内阻",bili:"电动势 内阻"},{name:"闭合电路欧姆定律",bili:"I=E/(R+r)"},{name:"路端电压U=E-Ir",bili:"路端电压"},{name:"电源输出功率最大",bili:"最大功率"},{name:"含容电路",bili:"含容 电容器"}]},
+{name:"电表",bili:"电表改装 多用电表",points:[
+{name:"电流表改电压表",bili:"电表改装 串联"},{name:"多用电表使用",bili:"多用电表"}]}]},
+{branch:"磁场",emoji:"🧲",modules:[
+{name:"磁场基本概念",bili:"磁感应强度 安培力",points:[
+{name:"磁感应强度B=F/IL",bili:"磁感应强度"},{name:"安培定则",bili:"安培定则 右手"},{name:"安培力F=BIL",bili:"安培力"}]},
+{name:"带电粒子在磁场",bili:"洛伦兹力 回旋",points:[
+{name:"洛伦兹力f=qvB",bili:"洛伦兹力"},{name:"带电粒子圆周R=mv/qB",bili:"带电粒子 圆周"},{name:"有界磁场",bili:"有界磁场"},{name:"质谱仪",bili:"质谱仪"},{name:"回旋加速器",bili:"回旋加速器"},{name:"霍尔效应",bili:"霍尔效应"}]}]},
+{branch:"电磁感应",emoji:"✨",modules:[
+{name:"感应电动势",bili:"法拉第 楞次",points:[
+{name:"磁通量Φ=BS",bili:"磁通量"},{name:"楞次定律",bili:"楞次 增反减同"},{name:"法拉第定律E=nΔΦ/Δt",bili:"法拉第定律"},{name:"E=BLv导体切割",bili:"E=BLv 切割"},{name:"感生与动生电动势",bili:"感生 动生"}]},
+{name:"电磁感应应用",bili:"自感 涡流 综合",points:[
+{name:"自感现象",bili:"自感"},{name:"涡流",bili:"涡流"},{name:"电磁感应电路",bili:"电路 等效电源"},{name:"电磁感应力学",bili:"力学 安培力"},{name:"电磁感应能量",bili:"能量 焦耳热"}]}]},
+{branch:"交变电流",emoji:"～",modules:[
+{name:"交流电",bili:"正弦 交流电 有效值",points:[
+{name:"交流电产生",bili:"产生 中性面"},{name:"瞬时值e=Emsinωt",bili:"瞬时值"},{name:"有效值E=Em/√2",bili:"有效值"},{name:"感抗与容抗",bili:"感抗 容抗"}]},
+{name:"变压器与输电",bili:"变压器 远距离输电",points:[
+{name:"变压器U₁/U₂=n₁/n₂",bili:"变压器"},{name:"远距离输电",bili:"远距离 输电"},{name:"电磁波谱",bili:"电磁波"}]}]},
+{branch:"热学",emoji:"🔥",modules:[
+{name:"分子动理论",bili:"分子运动 内能",points:[
+{name:"布朗运动",bili:"布朗运动"},{name:"分子力",bili:"分子力 引斥"},{name:"温度与分子平均动能",bili:"温度 平均动能"},{name:"内能",bili:"内能"}]},
+{name:"气体定律",bili:"玻意耳 查理 盖吕萨克",points:[
+{name:"玻意耳定律pV=常数",bili:"玻意耳"},{name:"查理定律p/T=常数",bili:"查理"},{name:"盖吕萨克定律V/T=常数",bili:"盖吕萨克"},{name:"理想气体状态方程",bili:"pV=nRT"}]},
+{name:"热力学定律",bili:"热力学第一第二定律",points:[
+{name:"热力学第一定律ΔU=W+Q",bili:"ΔU=W+Q"},{name:"热力学第二定律",bili:"方向性 熵"}]}]},
+{branch:"光学",emoji:"💡",modules:[
+{name:"几何光学",bili:"折射 反射 全反射",points:[
+{name:"反射定律",bili:"反射"},{name:"折射定律n=sinθ₁/sinθ₂",bili:"折射定律"},{name:"折射率n=c/v",bili:"折射率"},{name:"全反射临界角",bili:"全反射"}]},
+{name:"物理光学",bili:"干涉 衍射 偏振",points:[
+{name:"双缝干涉Δx=Lλ/d",bili:"双缝干涉"},{name:"薄膜干涉",bili:"薄膜干涉"},{name:"衍射",bili:"衍射"},{name:"偏振",bili:"偏振"}]},
+{name:"光的粒子性",bili:"光电效应 波粒二象性",points:[
+{name:"光电效应现象",bili:"光电效应"},{name:"爱因斯坦光电效应方程",bili:"光电效应方程"},{name:"光子能量E=hν",bili:"光子 E=hν"},{name:"波粒二象性与德布罗意波",bili:"波粒二象性"}]}]},
+{branch:"原子与核物理",emoji:"⚛️",modules:[
+{name:"原子结构",bili:"卢瑟福 玻尔 能级",points:[
+{name:"卢瑟福α散射",bili:"卢瑟福 α散射"},{name:"玻尔理论",bili:"玻尔 能级"},{name:"能级跃迁E=hν",bili:"能级 跃迁"},{name:"氢原子光谱",bili:"氢光谱"}]},
+{name:"原子核",bili:"衰变 核反应 质能方程",points:[
+{name:"天然放射现象",bili:"α β γ"},{name:"半衰期",bili:"半衰期"},{name:"核反应方程",bili:"核反应"},{name:"核裂变",bili:"裂变"},{name:"核聚变",bili:"聚变"},{name:"质能方程E=mc²",bili:"质能方程"}]}]},
+{branch:"物理实验",emoji:"🔬",modules:[
+{name:"力学实验",bili:"打点计时器 验证",points:[
+{name:"打点计时器纸带分析",bili:"打点计时器"},{name:"验证牛顿第二定律",bili:"验证牛顿第二定律 实验"},{name:"验证机械能守恒",bili:"验证机械能守恒 实验"},{name:"验证动量守恒",bili:"验证动量守恒 实验"},{name:"探究平抛运动",bili:"平抛 实验"},{name:"单摆测重力加速度",bili:"单摆 测g"}]},
+{name:"电学实验",bili:"伏安法 测电源",points:[
+{name:"伏安法测电阻",bili:"伏安法 内接 外接"},{name:"分压限流接法",bili:"分压 限流"},{name:"测电源电动势内阻",bili:"测电源 电动势"},{name:"多用电表使用",bili:"多用电表"},{name:"半偏法测电阻",bili:"半偏法"}]},
+{name:"仪器读数",bili:"游标卡尺 螺旋测微器",points:[
+{name:"游标卡尺读数",bili:"游标卡尺"},{name:"螺旋测微器读数",bili:"螺旋测微器"},{name:"电流表电压表读数",bili:"电流表 电压表 读数"}]}]}
+]};
+</script>
 <script src="script.js"></script>
 </body>
 </html>
