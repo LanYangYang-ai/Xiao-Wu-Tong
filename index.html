@@ -55,6 +55,17 @@
     </div>
 </div>
 <div class="feynman-overlay" id="feynmanOverlay" onclick="closeFeynmanModal()"></div>
+
+<div class="quiz-overlay" id="quizOverlay"></div>
+<div class="quiz-modal" id="quizModal">
+<div class="quiz-header"><span id="quizTitle">练习题</span><span class="quiz-close" onclick="closeQuiz()">✕</span></div>
+<div class="quiz-body" id="quizBody">
+<div class="quiz-progress" id="quizProgress">第 <span id="qNum">1</span>/3 题</div>
+<div class="quiz-question" id="quizQuestion"></div>
+<div class="quiz-options" id="quizOptions"></div>
+<div class="quiz-feedback" id="quizFeedback" style="display:none"></div>
+<div class="quiz-nav" id="quizNav"></div>
+</div></div>
 <div class="feynman-modal" id="feynmanModal">
 <div class="feynman-header"><span>🎤 讲给自己听</span><span class="feynman-close" onclick="closeFeynmanModal()">✕</span></div>
 <div class="feynman-body">
@@ -176,6 +187,7 @@ var KNOWLEDGE_TREE = {branches:[
 {name:"游标卡尺读数",bili:"游标卡尺"},{name:"螺旋测微器读数",bili:"螺旋测微器"},{name:"电流表电压表读数",bili:"电流表 电压表 读数"}]}]}
 ]};
 </script>
-<script src="script.js"></script>
+<script src="script.js"
+<script src="quiz_data.js"></script>></script>
 </body>
 </html>
