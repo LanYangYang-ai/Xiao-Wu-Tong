@@ -911,5 +911,78 @@ document.addEventListener("click", function(e){
 
 // 初始化时更新人格标签
 try{updatePersonalityBadge();}catch(e){}
+// === 改进搜索（CORS代理+播放量排序）===
+var BAD_WORDS = ["搞笑","鬼畜","游戏","娱乐","网红","吃鸡","王者","抖音","快手","电影","动漫","我的世界","Minecraft","模组","原神","英雄联盟","第五人格"];
+function biliSearch(keyword, callback){
+    var url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(
+        "https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=" + 
+        encodeURIComponent(keyword + " 高中物理") + "&page=1"
+    );
+    fetch(url).then(function(r){return r.json();}).then(function(d){
+        if(d.code===0 && d.data && d.data.result){
+            // 过滤娱乐内容
+            var items = d.data.result.filter(function(item){
+                var t = (item.title||"").replace(/<[^>]+>/g,"");
+                for(var i=0;i<BAD_WORDS.length;i++){if(t.indexOf(BAD_WORDS[i])>=0)return false;}
+                return true;
+            });
+            // 按播放量排序（主要）+弹幕量（次要）
+            items.sort(function(a,b){return (b.play||0)-(a.play||0) || (b.danmaku||0)-(a.danmaku||0);});
+            // 映射为前端格式
+            var videos = items.slice(0,20).map(function(item){
+                return {
+                    id: item.bvid || "",
+                    title: (item.title||"").replace(/<[^>]+>/g,""),
+                    cover: item.pic || "",
+                    author: item.author || "未知",
+                    url: "https://www.bilibili.com/video/" + (item.bvid||""),
+                    view: item.play || 0,
+                    duration: item.duration || "00:00"
+                };
+            });
+            callback(videos);
+        } else { callback(null); }
+    }).catch(function(){callback(null);});
+}
 
-(function(){var a;(window.searchKnowledgeNode=function(nm,kw,br){if(a===undefined){fetch("/api/videos?keyword=test").then(function(r){a=r.ok||r.status<500;_s(nm,kw,br)}).catch(function(){a=false;var h=document.getElementById("videoHint");if(h)h.textContent="??B站搜索:"+nm;var u="https://search.bilibili.com/all?keyword="+encodeURIComponent(kw+" ???");if(confirm("即将跳转B站搜索，确认？"))window.open(u,"_blank");})}else if(a){_s(nm,kw,br)}else{window.open("https://search.bilibili.com/all?keyword="+encodeURIComponent(kw+" ???"),"_blank")}});var _s=window._os2;})();
+// 重写知识节点搜索
+var oldSearch = window.searchKnowledgeNode || window._os2 || function(){};
+window.searchKnowledgeNode = function(nm, kw, br){
+    var hint = document.getElementById("videoHint");
+    var grid = document.getElementById("videoGrid");
+    if(hint) hint.textContent = "正在搜索: " + nm;
+    if(grid) grid.innerHTML = "";
+    
+    // 1. 先试本地API
+    fetch("/api/videos?keyword="+encodeURIComponent(kw)).then(function(r){
+        if(r.ok||r.status<500) return r.json().then(function(d){
+            if(d.success && d.data && d.data.length>0){
+                if(hint) hint.textContent = "找到 "+d.data.length+" 个视频（按播放量排序）";
+                if(window.renderVideos) renderVideos(d.data);
+                return;
+            }
+            // 本地API无结果，用B站代理
+            biliSearch(kw, function(videos){
+                if(videos && videos.length>0){
+                    if(hint) hint.textContent = "找到 "+videos.length+" 个视频（按播放量排序）";
+                    if(window.renderVideos) renderVideos(videos);
+                } else {
+                    if(hint) hint.textContent = "暂未找到视频，试试其他关键词";
+                }
+            });
+        });
+    }).catch(function(){
+        // 2. 本地API失败，直接用B站代理
+        biliSearch(kw, function(videos){
+            if(videos && videos.length>0){
+                if(hint) hint.textContent = "找到 "+videos.length+" 个视频（按播放量排序）";
+                if(window.renderVideos) renderVideos(videos);
+            } else {
+                // 3. 全部失败，跳转B站
+                if(hint) hint.textContent = "正在B站搜索: " + nm;
+                var u = "https://search.bilibili.com/all?keyword=" + encodeURIComponent(kw+" 高中物理");
+                if(confirm("即将跳转B站搜索相关视频？")) window.open(u, "_blank");
+            }
+        });
+    });
+};
