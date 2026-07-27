@@ -912,88 +912,8 @@ document.addEventListener("click", function(e){
 // 初始化时更新人格标签
 try{updatePersonalityBadge();}catch(e){}
 
-// === 练习题模块 ===
-var QC={sid:null,ids:[],idx:0,correct:0};
-function startQuiz(sid){
-var Q=QUIZ[sid];if(!Q||Q.length<1)return;
-var rec=JSON.parse(localStorage.getItem("pQuiz")||"{}");var r=rec[sid]||{};
-var ws=[];for(var k in r){if(r[k].c===false)ws.push(parseInt(k));}
-if(ws.length>0&&confirm("\u8FD9\u91CC\u6709"+ws.length+"\u9053\u4F60\u66FE\u7ECF\u7684\u5361\u70B9\uFF0C\u8981\u518D\u8BD5\u4E00\u6B21\u5417\uFF1F")){qc(sid,ws);return;}
-var done=rec[sid]||{};var av=[];for(var i=0;i<Q.length;i++){if(!done[i])av.push(i);}
-if(av.length===0){alert("\u4F60\u5DF2\u6311\u6218\u5B8C\u672C\u6B65\u9AA4\u6240\u6709\u5361\u70B9\uFF01");return;}
-var ids=[];for(var i=0;i<Math.min(3,av.length);i++){var r2=Math.floor(Math.random()*av.length);ids.push(av[r2]);av.splice(r2,1);}
-qc(sid,ids);}
-function qc(sid,ids){QC={sid:sid,ids:ids,idx:0,correct:0};document.getElementById("quizOverlay").style.display="block";document.getElementById("quizModal").style.display="block";sq();}
-function sq(){
-var c=QC;if(c.idx>=c.ids.length){sr();return;}
-var q=QUIZ[c.sid][c.ids[c.idx]];
-document.getElementById("qNum").textContent=c.idx+1;
-document.getElementById("quizProgress").textContent="\u7B2C "+(c.idx+1)+"/"+c.ids.length+" \u9898";
-document.getElementById("quizQuestion").textContent=q.q;
-var h="";for(var i=0;i<q.o.length;i++){h+='<div class="quiz-option" onclick="sa("+i+')">'+q.o[i]+"</div>";}
-document.getElementById("quizOptions").innerHTML=h;
-document.getElementById("quizFeedback").style.display="none";
-document.getElementById("quizNav").innerHTML="";
-document.getElementById("quizTitle").textContent=q.t||"练习题";
-}
-function sa(s){
-var c=QC;var q=QUIZ[c.sid][c.ids[c.idx]];var ok=s===q.a;if(ok)c.correct++;
-var rec=JSON.parse(localStorage.getItem("pQuiz")||"{}");if(!rec[c.sid])rec[c.sid]={};
-var qi=c.ids[c.idx];if(!rec[c.sid][qi])rec[c.sid][qi]={at:0,t:q.t||""};
-rec[c.sid][qi].at++;rec[c.sid][qi].c=ok;localStorage.setItem("pQuiz",JSON.stringify(rec));
-c.idx++;
-if(!ok&&rec[c.sid][qi].at>=2){setTimeout(function(){alert("\u8FD9\u9053\u9898\u786E\u5B9E\u662F\u4E2A\u786C\u9AA8\u5934\uFF0C\u8BB0\u4F4F\uFF1A\u5B83\u8003\u7684\u662F"+q.t);},500);}
-var fb=document.getElementById("quizFeedback");fb.style.display="block";
-fb.innerHTML=(ok?"\u2705 \u7B54\u5BF9\u4E86\uFF01":"\u274C \u7B54\u9519\u4E86\u3002")+'<div class="quiz-exp">'+q.e+'</div><div class="quiz-enc">'+q.c+'</div>';
-document.getElementById("quizOptions").innerHTML="";
-document.getElementById("quizNav").innerHTML='<button class="quiz-next" onclick="sq()">\u4E0B\u4E00\u9898 \u2192</button>';
-if(ok&&q.c)setTimeout(function(){alert(q.c);},300);
-}
-function sr(){
-var c=QC;var sigs=["\u4F60\u4ECA\u5929\u7684\u7269\u7406\u529B\u573A\uFF0C\u5F3A\u5F97\u50CF\u4E2A\u9ED1\u6D1E\u3002","\u8BEF\u5DEE\u662F\u6D4B\u91CF\u7684\u7075\u9B42\uFF0C\u4E0B\u6B21\u4F1A\u66F4\u7CBE\u786E\u3002","\u80FD\u91CF\u5B88\u6052\uFF0C\u9519\u9898\u5B88\u6052\uFF0C\u4F46\u4F60\u4E0D\u4F1A\u6C38\u8FDC\u9519\u3002","\u7269\u7406\u5B66\u5BB6\u4E5F\u66FE\u5BF9\u7740\u6570\u636E\u53D1\u5446\uFF0C\u4F60\u5E76\u4E0D\u5B64\u5355\u3002"];
-var si=c.correct===c.ids.length?0:(c.ids.length-c.correct===1?1:(c.ids.length-c.correct===2?2:3));
-document.getElementById("quizTitle").textContent="\u7EC3\u4E60\u7ED3\u679C";
-document.getElementById("quizProgress").textContent="\u5DF2\u5B8C\u6210";
-document.getElementById("quizQuestion").innerHTML="\u4F60\u7B54\u5BF9\u4E86 <strong>"+c.correct+"</strong>/"+c.ids.length+" \u9898<br><br>\uD83D\uDCDD \u7269\u7406\u7B7E\u540D\uFF1A<em>"+sigs[si]+"</em><br><br><button onclick=\'navigator.clipboard.writeText(\""+sigs[si]+"\");alert(\"\u7B7E\u540D\u5DF2\u590D\u5236\uFF01\");\'>\u590D\u5236\u7B7E\u540D</button>";
-document.getElementById("quizOptions").innerHTML="";
-document.getElementById("quizFeedback").style.display="none";
-var rec2=JSON.parse(localStorage.getItem("pQuiz")||"{}");var allDone=true;var Q2=QUIZ[c.sid];if(Q2){for(var i=0;i<Q2.length;i++){var r3=(rec2[c.sid]||{})[i];if(!r3||r3.c===false){allDone=false;break;}}}
-if(allDone){document.getElementById("quizNav").innerHTML='\u4F60\u5DF2\u6311\u6218\u5B8C\u672C\u6B65\u9AA4\u6240\u6709\u5361\u70B9\uFF01\u4F60\u7684\u7269\u7406\u76F4\u89C9\u6B63\u5728\u53D8\u5F97\u950B\u5229\u3002<br><button class="quiz-next" onclick="cq()">\u9000\u51FA</button>';}else{
-document.getElementById("quizNav").innerHTML='<button class="quiz-next" onclick="cq()">\u9000\u51FA\u7EC3\u4E60</button><button class="quiz-next" style="margin-left:10px" onclick="cq();setTimeout(function(){startQuiz(\"'+c.sid+'\");},300)">\u7EE7\u7EED\u7EC3\u4E60</button>';
-}
-}
-function cq(){document.getElementById("quizOverlay").style.display="none";document.getElementById("quizModal").style.display="none";}
-var _orlt=renderLogicTree;renderLogicTree=function(){_orlt();setTimeout(function(){
-document.querySelectorAll(".step-card").forEach(function(c){
-if(c.querySelector(".quiz-btn"))return;
-var sid=c.getAttribute("data-step");if(!sid||!QUIZ[sid])return;
-var b=document.createElement("button");b.className="quiz-btn";
-b.textContent="\uD83D\uDCDD \u6765\u6D4B\u4E09\u9053\u8FD9\u4E2A\u6B65\u9AA4\u7684\u6838\u5FC3\u5361\u70B9";
-b.onclick=function(){startQuiz(sid);};c.appendChild(b);
-});},200);};
-var BW=["\u641E\u7B11","\u9B3C\u755C","\u6E38\u620F","\u5A31\u4E50","\u7F51\u7EA2","\u5403\u9E21","\u738B\u8005","\u6296\u97F3","\u5FEB\u624B","\u7535\u5F71","\u52A8\u6F2B","\u6211\u7684\u4E16\u754C","Minecraft","\u6A21\u7EC4","\u539F\u795E","\u82F1\u96C4\u8054\u76DF","\u7B2C\u4E94\u4EBA\u683C"];
-function bs(kw,cb){
-var u="https://api.allorigins.win/raw?url="+encodeURIComponent("https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword="+encodeURIComponent(kw+" \u9AD8\u4E2D\u7269\u7406")+"&page=1");
-fetch(u).then(function(r){return r.json();}).then(function(d){
-if(d.code===0&&d.data&&d.data.result){
-var its=d.data.result.filter(function(it){var t=(it.title||"").replace(/<[^>]+>/g,"");for(var i=0;i<BW.length;i++){if(t.indexOf(BW[i])>=0)return false;}return true;});
-its.sort(function(a,b){return(b.play||0)-(a.play||0)||(b.danmaku||0)-(a.danmaku||0);});
-var vs=its.slice(0,20).map(function(it){return{id:it.bvid||"",title:(it.title||"").replace(/<[^>]+>/g,""),cover:it.pic||"",author:it.author||"\u672A\u77E5",url:"https://www.bilibili.com/video/"+(it.bvid||""),view:it.play||0,duration:it.duration||"00:00"};});
-cb(vs);}else{cb(null);}}).catch(function(){cb(null);});}
-window.searchKnowledgeNode=function(nm,kw,br){
-var h=document.getElementById("videoHint");var g=document.getElementById("videoGrid");
-if(h)h.textContent="\u6B63\u5728\u641C\u7D22: "+nm;if(g)g.innerHTML="";
-bs(kw,function(vs){if(vs&&vs.length>0){if(h)h.textContent="\u627E\u5230 "+vs.length+" \u4E2A\u89C6\u9891\uFF08\u6309\u64AD\u653E\u91CF\u6392\u5E8F\uFF09";if(window.renderVideos)renderVideos(vs);}else{if(h)h.textContent="\u6682\u672A\u627E\u5230\u89C6\u9891";}});
-};
-
-
 // === 物理名言 ===
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
-function showNextQuote(){
-var qt=document.getElementById("quoteText");
-if(!qt) return;
-qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];
-PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;
-}
+function showNextQuote(){var qt=document.getElementById("quoteText");if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}
 setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
