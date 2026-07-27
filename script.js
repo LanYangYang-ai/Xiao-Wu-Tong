@@ -971,4 +971,15 @@ var its=d.data.result.filter(function(it){var t=(it.title||"").replace(/<[^>]+>/
 its.sort(function(a,b){return(b.play||0)-(a.play||0)||(b.danmaku||0)-(a.danmaku||0);});
 var vs=its.slice(0,20).map(function(it){return{id:it.bvid||"",title:(it.title||"").replace(/<[^>]+>/g,""),cover:it.pic||"",author:it.author||"未知",url:"https://www.bilibili.com/video/"+(it.bvid||""),view:it.play||0,duration:it.duration||"00:00"};});
 cb(vs);}else{cb(null);}}).catch(function(){cb(null);});}
-window.searchKnowledgeNode=function(nm,kw,br){var h=document.getElementById("videoHint");var g=document.getElementById("videoGrid");if(h)h.textContent="正在搜索: "+nm;if(g)g.innerHTML="";bs(kw,function(vs){if(vs&&vs.length>0){if(h)h.textContent="找到 "+vs.length+" 个视频（按播放量排序）";if(window.renderVideos)renderVideos(vs);}else{if(h)h.textContent="暂未找到视频";}});};
+window.searchKnowledgeNode=function(nm,kw,br){var h=document.getElementById("videoHint");var g=document.getElementById("videoGrid");if(h)h.textContent="正在搜索: "+nm;if(g)g.innerHTML="";bs(kw,function(vs){if(vs&&vs.length>0){if(h)h.textContent="找到 "+vs.length+" 个视频（按播放量排序）";if(window.renderVideos)renderVideos(vs);}else{if(h)h.textContent="B站搜索暂时不可用";biliFallback(kw);}});};
+
+
+function biliFallback(kw){
+var g=document.getElementById('videoGrid');if(!g)return;g.innerHTML='';
+var d=document.createElement('div');d.style.cssText='text-align:center;padding:30px';
+var p=document.createElement('p');p.style.cssText='color:#718096;margin-bottom:16px';p.textContent='无法获取视频列表，点击下方在B站中搜索';
+var b=document.createElement('button');b.style.cssText='padding:12px 28px;background:linear-gradient(90deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer';
+b.textContent="在B站搜索此知识点 →";
+b.onclick=function(){window.open("https://search.bilibili.com/all?keyword="+encodeURIComponent(kw+" 高中物理"),"_blank");};
+d.appendChild(p);d.appendChild(b);g.appendChild(d);
+}
