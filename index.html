@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>牛顿第二定律急诊室</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 头部 -->
+<div class="header">
+    <h1>🏥 牛顿第二定律急诊室</h1>
+    <p>你的物理困惑，AI 来诊断</p>
+</div>
+
+<div class="container">
+
+    <!-- 物理名言轮播 -->
+    <div class="quote-box" id="quoteBox">
+        <div class="quote-text" id="quoteText">加载中...</div>
+    </div>
+
+    <!-- 输入区域 -->
+    <div class="input-section">
+        <textarea id="questionInput" placeholder="请描述你在牛顿第二定律上的具体困惑，例如：整体法和隔离法怎么区分？"></textarea>
+        <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">立即诊断</button>
+    </div>
+
+    <!-- 加载 -->
+    <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <p>正在诊断你的问题并搜索相关视频...</p>
+    </div>
+
+    <!-- 错误 -->
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- 诊断结果 -->
+    <div id="resultArea" style="display:none">
+        <div id="diagnosisCard"></div>
+    </div>
+
+    <!-- 视频推荐 -->
+    <div class="video-section" id="videoSection" style="display:none">
+        <h2>📺 根据你的困惑，为你筛选以下视频</h2>
+        <div class="video-grid" id="videoGrid"></div>
+    </div>
+
+</div>
+
+<!-- 底部合规声明 -->
+<div class="footer">
+    本网站仅提供公开视频链接导航，所有内容版权归原作者及 Bilibili 平台所有。<br>
+    如涉及侵权，请联系处理。
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
