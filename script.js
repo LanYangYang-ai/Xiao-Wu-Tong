@@ -739,7 +739,33 @@ function toggleModule(header) {
     }
 }
 
-function searchKnowledgeNode(nodeName,biliKeywords){var h=document.getElementById('videoHint');var g=document.getElementById('videoGrid');if(h)h.textContent='正在搜索: '+nodeName;if(g)g.innerHTML='';var bw=['\u641E\u7B11','\u9B3C\u755C','\u6E38\u620F','\u5A31\u4E50','\u7F51\u7EA2','\u5403\u9E21','\u738B\u8005','\u6296\u97F3','\u5FEB\u624B','\u7535\u5F71','\u52A8\u6F2B','\u6211\u7684\u4E16\u754C','Minecraft','\u6A21\u7EC4','\u539F\u795E','\u82F1\u96C4\u8054\u76DF','\u7B2C\u4E94\u4EBA\u683C'];var u='https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword='+encodeURIComponent(biliKeywords+' 高中物理')+'&page=1';function hd(d){if(d.code===0&&d.data&&d.data.result&&d.data.result.length>0){var vs=d.data.result.filter(function(it){var t=(it.title||'').replace(/<[^>]+>/g,'');for(var i=0;i<bw.length;i++){if(t.indexOf(bw[i])>=0)return false;}return true;}).sort(function(a,b){return(b.play||0)-(a.play||0)}).slice(0,20).map(function(it){return{id:it.bvid||'',title:(it.title||'').replace(/<[^>]+>/g,''),cover:it.pic||'',author:it.author||'\u672A\u77E5',url:'https://www.bilibili.com/video/'+(it.bvid||''),view:it.play||0,duration:it.duration||'00:00'};});if(window.renderVideos)renderVideos(vs);if(h)h.textContent='\u627E\u5230 '+vs.length+' \u4E2A\u89C6\u9891';}}fetch(u).then(function(r){if(r.ok)return r.json();throw Error();}).then(function(d){hd(d);}).catch(function(){fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(u)).then(function(r){return r.json();}).then(function(d){hd(d);}).catch(function(){fetch('https://corsproxy.io/?url='+encodeURIComponent(u)).then(function(r){return r.json();}).then(function(d){hd(d);}).catch(function(){if(h)h.textContent='B\u7AD9\u641C\u7D22\u4E0D\u53EF\u7528';var a=document.createElement('a');a.href='https://search.bilibili.com/all?keyword='+encodeURIComponent(biliKeywords+' 高中物理');a.target='_blank';a.textContent='\u5728B\u7AD9\u4E2D\u67E5\u770B\u641C\u7D22\u7ED3\u679C';a.style.cssText='display:block;text-align:center;padding:12px;color:#3182ce;font-size:15px;margin-top:16px;text-decoration:none';if(g){g.innerHTML='';g.appendChild(a);}});});});}// 初始化知识框架
+function searchKnowledgeNode(nodeName, biliKeywords) {
+    // 更新提示
+    var hint = document.getElementById("videoHint");
+    if (hint) hint.textContent = "正在搜索：" + nodeName;
+
+    // 清空视频
+    var grid = document.getElementById("videoGrid");
+    if (grid) grid.innerHTML = "";
+
+    // 搜索 B站
+    fetch("/api/videos?keyword=" + encodeURIComponent(biliKeywords))
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success && d.data && d.data.length > 0) {
+                d.data.sort(function(a, b) { return (b.view || 0) - (a.view || 0); });
+                renderVideos(d.data.slice(0, 20));
+                if (hint) hint.textContent = "找到 " + d.data.length + " 个关于「" + nodeName + "」的视频";
+            } else {
+                if (hint) hint.textContent = "未找到「" + nodeName + "」相关视频，试试其他关键词";
+            }
+        })
+        .catch(function() {
+            if (hint) hint.textContent = "搜索失败，请检查服务器是否运行";
+        });
+}
+
+// 初始化知识框架
 var KT_INIT = function() {
     try { toggleView('tree'); } catch(e) {
         // fallback
@@ -887,6 +913,7 @@ document.addEventListener("click", function(e){
 try{updatePersonalityBadge();}catch(e){}
 
 // === 物理名言 ===
-var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
+var PHYSICS_QUOTES=["“如果我看得更远，那是因为我站在巨人的肩膀上。” — 牛顿","“给我一个支点，我可以撒动整个地球。” — 阿基米德","“宇宙最不可理解的事情是它是可以被理解的。” — 爱因斯坦","“想象力比知识更重要。” — 爱因斯坦","“不要停止提问。” — 爱因斯坦","“物理定律是上帝思想的印记。” — 开普勒","“在科学上，每一条道路都应该走一走。” — 法拉第","“万有引力、电磁力、强力和弱力，宇宙就靠这四种力。”","“F=ma，这可能是你人生中最重要的一条方程。”","“物理不只是公式，它是描述宇宙的语言。”","“理解物理，就是理解世界如何运作。”","“力是改变物体运动状态的原因，而不是维持运动的原因。”","“每一个物理公式背后，都有一个精彩的故事。”","“自然界喜欢简单。” — 牛顿","“宇宙中最不可理解的事情，是它居然是可以被理解的。” — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
-function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}
+setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
