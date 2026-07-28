@@ -669,33 +669,16 @@ function toggleModule(header) {
     }
 }
 function searchKnowledgeNode(nodeName, biliKeywords) {
-    // 更新提示
+    // 直接跳转 B站 搜索
     var hint = document.getElementById("videoHint");
-    if (hint) hint.textContent = "正在搜索：" + nodeName;
-    // 清空视频网格
+    if (hint) hint.textContent = "正在跳转至 B站 搜索相关视频...";
     var grid = document.getElementById("videoGrid");
     if (grid) grid.innerHTML = "";
-    // 使用 B站搜索（通过 CORS 代理）
-    tryBiliSearch(biliKeywords, function(d) {
-        if (d && d.code === 0 && d.data && d.data.result && d.data.result.length > 0) {
-            var bw = ["搞笑","鬼畜","游戏","娱乐","网红","吃鸡","王者","抖音","快手","电影","动漫","我的世界","Minecraft","模组","原神","英雄联盟","第五人格"];
-            var vs = d.data.result.filter(function(it) {
-                var t = (it.title || "").replace(/<[^>]+>/g, "");
-                for (var i = 0; i < bw.length; i++) { if (t.indexOf(bw[i]) >= 0) return false; }
-                return true;
-            }).sort(function(a, b) { return (b.play || 0) - (a.play || 0); }).slice(0, 20).map(function(it) {
-                return { id: it.bvid || "", title: (it.title || "").replace(/<[^>]+>/g, ""), cover: it.pic || "", author: it.author || "未知", url: "https://www.bilibili.com/video/" + (it.bvid || ""), view: it.play || 0, duration: it.duration || "00:00" };
-            });
-            renderVideos(vs);
-        } else {
-            if (hint) hint.textContent = "未找到相关视频";
-            var a = document.createElement("a");
-            a.href = "https://search.bilibili.com/all?keyword=" + encodeURIComponent(biliKeywords + " 高中物理");
-            a.target = "_blank"; a.textContent = "在B站中查看搜索结果";
-            a.style.cssText = "display:block;text-align:center;padding:12px;color:#3182ce;font-size:15px;margin-top:16px;text-decoration:none";
-            if (grid) { grid.innerHTML = ""; grid.appendChild(a); }
-        }
-    });
+    var url = "https://search.bilibili.com/all?keyword=" + encodeURIComponent(biliKeywords + " 高中物理");
+    // 合规性：跳转前获取用户确认，明确告知版权归属
+    if (confirm("即将跳转至 B站 观看相关讲解视频，内容版权归原作者所有。确认跳转？")) {
+        window.open(url, "_blank");
+    }
 }
 
 // 初始化知识框架
@@ -895,6 +878,7 @@ function tryBiliSearch(keyword, callback) {
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+
 
 
 
