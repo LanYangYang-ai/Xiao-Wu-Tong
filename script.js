@@ -882,25 +882,20 @@ function confirmJump(url) {
 function tryBiliSearch(keyword, callback) {
     if (!keyword) { if (callback) callback(null); return; }
     var u = "https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=" + encodeURIComponent(keyword + " 高中物理") + "&page=1";
-    var timedOut = false;
-    var timer = setTimeout(function() { timedOut = true; if (callback) callback(null); }, 10000);
-    var scb = function(d) { if (timedOut) return; clearTimeout(timer); if (callback) callback(d); };
-    // 方法1: 直接请求B站API
-    fetch(u).then(function(r) { if (r.ok) return r.json(); throw Error(); }).then(function(d) { scb(d); }).catch(function() {
-        // 方法2: 通过CORS代理 allorigins
-        fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(u)).then(function(r) { return r.json(); }).then(function(d) { scb(d); }).catch(function() {
-            // 方法3: 通过CORS代理 corsproxy
-            fetch("https://corsproxy.io/?url=" + encodeURIComponent(u)).then(function(r) { return r.json(); }).then(function(d) { scb(d); }).catch(function() {
-                console.log("B站搜索失败：所有代理均不可用");
-                scb(null);
-            });
-        });
-    });
+    var done = false;
+    // 3秒超时 - 无论代理是否成功，3秒后显示备用链接
+    var timer = setTimeout(function() { if (!done) { done = true; if (callback) callback(null); } }, 3000);
+    var scb = function(d) { if (done) { return; } done = true; clearTimeout(timer); if (callback) callback(d); };
+    // 并行尝试所有方法 - 谁快用谁
+    fetch(u).then(function(r) { if (r.ok) return r.json(); throw Error(); }).then(function(d) { scb(d); }).catch(function(){});
+    fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(u)).then(function(r) { return r.json(); }).then(function(d) { scb(d); }).catch(function(){});
+    fetch("https://corsproxy.io/?url=" + encodeURIComponent(u)).then(function(r) { return r.json(); }).then(function(d) { scb(d); }).catch(function(){});
 }
 
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+
 
 
 
