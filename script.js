@@ -1,4 +1,4 @@
-// ==================== 高中物理 · 逻辑脉络图 ====================
+﻿// ==================== 高中物理 · 逻辑脉络图 ====================
 // 核心原则：理性 · 从容 · 长期主义
 // 所有逻辑树数据硬编码在前端，运行时零API消耗
 
@@ -444,103 +444,23 @@ function searchVideosForSelected() {
 
     for (var ki = 0; ki < keywords.length; ki++) {
         (function(kw) {
-            fetch("/api/videos?keyword=" + encodeURIComponent(kw))
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    if (d.success && d.data) {
-                        for (var vi = 0; vi < d.data.length; vi++) {
-                            var v = d.data[vi];
-                            if (!seen[v.id]) { seen[v.id] = true; allVideos.push(v); }
-                        }
-                    }
-                })
-                .catch(function() {})
-                .then(function() {
-                    completed++;
-                    if (completed >= keywords.length) {
-                        // 按播放量排序
-                        allVideos.sort(function(a, b) { return (b.view || 0) - (a.view || 0); });
-                        renderVideos(allVideos.slice(0, 20));
-                    }
-                });
-        })(keywords[ki]);
-    }
-}
-
-// ==================== 渲染视频 ====================
-function renderVideos(videos) {
-    if (videos.length === 0) {
-        dom.videoHint.textContent = "暂未找到相关视频，可尝试切换搜索关键词";
-        dom.videoGrid.innerHTML = "";
-        return;
-    }
-    dom.videoHint.textContent = "共找到 " + videos.length + " 个相关视频，点击卡片跳转至 B站";
-    var html = "";
-    for (var i = 0; i < videos.length; i++) {
-        var v = videos[i];
-        html += '<div class="video-card" data-url="' + escAttr(v.url) + '" data-title="' + escAttr(v.title) + '">' +
-            '<div class="cover-wrap"><img src="' + escAttr(v.cover || "") + '" alt="' + escAttr(v.title) + '" loading="lazy"></div>' +
-            '<div class="info"><div class="title">' + escHtml(v.title) + '</div>' +
-            '<div class="meta"><span>' + escHtml(v.author || "未知") + '</span><span>' + fmtViews(v.view || 0) + '</span></div>' +
-            '<div class="source-tag">来源：B站</div></div></div>';
-    }
-    dom.videoGrid.innerHTML = html;
-}
-
-// ==================== 视频点击 ====================
-document.addEventListener("click", function(e) {
-    var card = e.target.closest(".video-card");
-    if (card) {
-        var url = card.getAttribute("data-url");
-        var title = card.getAttribute("data-title") || "";
-        if (url && confirm("即将跳转至 B站 观看《" + title.substring(0, 30) + "》\n内容版权归原作者所有。本站仅提供导航，不存储任何视频。\n确认跳转？")) {
-            window.open(url, "_blank");
-        }
-    }
-});
-
-// ==================== 自由搜索（辅助入口）====================
-function handleSearch() {
-    var keyword = dom.searchInput.value.trim();
-    if (!keyword) return;
-
-    // 在逻辑树数据中搜索匹配的模块
-    for (var mid in LOGIC_TREES) {
-        var tree = LOGIC_TREES[mid];
-        var allSteps = (tree.steps || []).concat(tree.dualSteps || []);
-        for (var si = 0; si < allSteps.length; si++) {
-            var step = allSteps[si];
-            var allBili = step.bili || [];
-            for (var bi = 0; bi < allBili.length; bi++) {
-                if (allBili[bi].indexOf(keyword) >= 0 || step.name.indexOf(keyword) >= 0) {
-                    // 找到匹配，切换模块并选中该步骤
-                    switchModule(mid);
-                    selectedSteps[step.id] = true;
-                    renderLogicTree();
-                    searchVideosForSelected();
-                    return;
+            tryBiliSearch(kw, function(d) {
+                if (d && d.code === 0 && d.data && d.data.result && d.data.result.length > 0) {
+                    var bw = ["搞笑","鬼畜","游戏","娱乐","网红","吃鸡","王者","抖音","快手","电影","动漫","我的世界","Minecraft","模组","原神","英雄联盟","第五人格"];
+                    var vs = d.data.result.filter(function(it) {
+                        var t = (it.title || "").replace(/<[^>]+>/g, "");
+                        for (var i = 0; i < bw.length; i++) { if (t.indexOf(bw[i]) >= 0) return false; }
+                        return true;
+                    }).sort(function(a, b) { return (b.play || 0) - (a.play || 0); }).slice(0, 20).map(function(it) {
+                        return { id: it.bvid || "", title: (it.title || "").replace(/<[^>]+>/g, ""), cover: it.pic || "", author: it.author || "未知", url: "https://www.bilibili.com/video/" + (it.bvid || ""), view: it.play || 0, duration: it.duration || "00:00" };
+                    });
+                    renderVideos(vs);
                 }
-            }
-        }
+            });
+        })(keywords[ki]);
+
     }
-
-    // 没找到匹配，直接用关键词搜索
-    dom.videoHint.textContent = "正在搜索：\"" + keyword + "\"...";
-    dom.videoGrid.innerHTML = "";
-    dom.videoArea.style.display = "block";
-    fetch("/api/videos?keyword=" + encodeURIComponent(keyword))
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success && d.data) {
-                d.data.sort(function(a, b) { return (b.view || 0) - (a.view || 0); });
-                renderVideos(d.data.slice(0, 20));
-            } else {
-                dom.videoHint.textContent = "暂未找到相关视频";
-            }
-        })
-        .catch(function() { dom.videoHint.textContent = "搜索失败，请检查服务器是否运行"; });
 }
-
 // ==================== 学习足迹 ====================
 function updateFootprint() {
     var visits = JSON.parse(localStorage.getItem("physicsVisitLog") || "{}");
@@ -720,7 +640,6 @@ function renderKnowledgeTree() {
 }
 
 function toggleBranch(header) {
-    var children = header.nextElementSibling;
     var arrow = header.querySelector(".toggle-arrow");
     if (children) {
         var isHidden = children.style.display === "none" || !children.style.display;
@@ -738,31 +657,34 @@ function toggleModule(header) {
         if (arrow) arrow.textContent = isHidden ? "▼" : "▶";
     }
 }
-
 function searchKnowledgeNode(nodeName, biliKeywords) {
     // 更新提示
     var hint = document.getElementById("videoHint");
     if (hint) hint.textContent = "正在搜索：" + nodeName;
-
-    // 清空视频
+    // 清空视频网格
     var grid = document.getElementById("videoGrid");
     if (grid) grid.innerHTML = "";
-
-    // 搜索 B站
-    fetch("/api/videos?keyword=" + encodeURIComponent(biliKeywords))
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success && d.data && d.data.length > 0) {
-                d.data.sort(function(a, b) { return (b.view || 0) - (a.view || 0); });
-                renderVideos(d.data.slice(0, 20));
-                if (hint) hint.textContent = "找到 " + d.data.length + " 个关于「" + nodeName + "」的视频";
-            } else {
-                if (hint) hint.textContent = "未找到「" + nodeName + "」相关视频，试试其他关键词";
-            }
-        })
-        .catch(function() {
-            if (hint) hint.textContent = "搜索失败，请检查服务器是否运行";
-        });
+    // 使用 B站搜索（通过 CORS 代理）
+    tryBiliSearch(biliKeywords, function(d) {
+        if (d && d.code === 0 && d.data && d.data.result && d.data.result.length > 0) {
+            var bw = ["搞笑","鬼畜","游戏","娱乐","网红","吃鸡","王者","抖音","快手","电影","动漫","我的世界","Minecraft","模组","原神","英雄联盟","第五人格"];
+            var vs = d.data.result.filter(function(it) {
+                var t = (it.title || "").replace(/<[^>]+>/g, "");
+                for (var i = 0; i < bw.length; i++) { if (t.indexOf(bw[i]) >= 0) return false; }
+                return true;
+            }).sort(function(a, b) { return (b.play || 0) - (a.play || 0); }).slice(0, 20).map(function(it) {
+                return { id: it.bvid || "", title: (it.title || "").replace(/<[^>]+>/g, ""), cover: it.pic || "", author: it.author || "未知", url: "https://www.bilibili.com/video/" + (it.bvid || ""), view: it.play || 0, duration: it.duration || "00:00" };
+            });
+            renderVideos(vs);
+        } else {
+            if (hint) hint.textContent = "未找到相关视频";
+            var a = document.createElement("a");
+            a.href = "https://search.bilibili.com/all?keyword=" + encodeURIComponent(biliKeywords + " 高中物理");
+            a.target = "_blank"; a.textContent = "在B站中查看搜索结果";
+            a.style.cssText = "display:block;text-align:center;padding:12px;color:#3182ce;font-size:15px;margin-top:16px;text-decoration:none";
+            if (grid) { grid.innerHTML = ""; grid.appendChild(a); }
+        }
+    });
 }
 
 // 初始化知识框架
@@ -913,6 +835,65 @@ document.addEventListener("click", function(e){
 try{updatePersonalityBadge();}catch(e){}
 
 // === 物理名言 ===
-var PHYSICS_QUOTES=["“如果我看得更远，那是因为我站在巨人的肩膀上。” — 牛顿","“给我一个支点，我可以撒动整个地球。” — 阿基米德","“宇宙最不可理解的事情是它是可以被理解的。” — 爱因斯坦","“想象力比知识更重要。” — 爱因斯坦","“不要停止提问。” — 爱因斯坦","“物理定律是上帝思想的印记。” — 开普勒","“在科学上，每一条道路都应该走一走。” — 法拉第","“万有引力、电磁力、强力和弱力，宇宙就靠这四种力。”","“F=ma，这可能是你人生中最重要的一条方程。”","“物理不只是公式，它是描述宇宙的语言。”","“理解物理，就是理解世界如何运作。”","“力是改变物体运动状态的原因，而不是维持运动的原因。”","“每一个物理公式背后，都有一个精彩的故事。”","“自然界喜欢简单。” — 牛顿","“宇宙中最不可理解的事情，是它居然是可以被理解的。” — 爱因斯坦"];
+// ==================== 渲染视频卡片 ====================
+// 合规性：仅做跳转导航，不存储任何视频内容
+function renderVideos(videos) {
+    var grid = document.getElementById("videoGrid");
+    if (!grid || !videos || videos.length === 0) return;
+    grid.innerHTML = "";
+    var html = "";
+    for (var i = 0; i < videos.length; i++) {
+        var v = videos[i];
+        var title = (v.title || "").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        html += '<div class="video-card" onclick="confirmJump(\"' + (v.url || "") + '\")">' +
+            '<div class="video-cover-wrap"><img class="video-cover" src="' + (v.cover || "") + '" alt="' + title + '" loading="lazy" onerror="this.style.display=\'none\'"></div>' +
+            '<div class="video-info"><div class="video-title">' + title + '</div>' +
+            '<div class="video-meta"><span>' + (v.author || "未知") + '</span><span>' + fmtViews(v.view || 0) + " 播放</span></div>" +
+            '<div class="video-source">来源：B站</div></div></div>';
+    }
+    grid.innerHTML = html;
+    var hint = document.getElementById("videoHint");
+    if (hint) hint.textContent = "找到 " + videos.length + " 个相关视频";
+}
+
+// ==================== 确认跳转弹窗 ====================
+// 合规性：仅做导航跳转，不存储视频，明确告知用户版权归属
+function confirmJump(url) {
+    if (!url) return;
+    if (confirm("即将跳转至 B站 观看，内容版权归原作者所有。本站仅提供导航，不存储任何视频。确认跳转？")) {
+        window.open(url, "_blank");
+    }
+}
+
+// ==================== B站搜索辅助函数 ====================
+// 合规性：仅通过公开API获取视频信息，不存储任何视频内容
+// 使用双重CORS代理解决浏览器跨域限制
+function tryBiliSearch(keyword, callback) {
+    if (!keyword) { if (callback) callback(null); return; }
+    var u = "https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=" + encodeURIComponent(keyword + " 高中物理") + "&page=1";
+    // 方法1: 直接请求B站API
+    fetch(u).then(function(r) { if (r.ok) return r.json(); throw Error(); }).then(function(d) { if (callback) callback(d); }).catch(function() {
+        // 方法2: 通过CORS代理 allorigins
+        fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(u)).then(function(r) { return r.json(); }).then(function(d) { if (callback) callback(d); }).catch(function() {
+            // 方法3: 通过CORS代理 corsproxy
+            fetch("https://corsproxy.io/?url=" + encodeURIComponent(u)).then(function(r) { return r.json(); }).then(function(d) { if (callback) callback(d); }).catch(function() {
+                console.log("B站搜索失败：所有代理均不可用");
+                if (callback) callback(null);
+            });
+        });
+    });
+}
+
+var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
-function showNextQuote(){var qt=document.getElementById("quoteText");if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+
+
+
+
+
+
+
+
+
+
