@@ -2494,6 +2494,7 @@ var _origRLT2 = renderLogicTree;
 renderLogicTree = function() { _origRLT2(); setTimeout(addQuizButtons, 200); };
 
 
+
 // ==================== 自习室模块 ====================
 // 物理天气
 var PHYSICS_WEATHER = [
@@ -2524,60 +2525,214 @@ var STUDY_START = null;
 var STUDY_GOAL = "";
 var STUDY_NOISE = null;
 var STUDY_TIMER = null;
+var STUDY_MODE_TYPE = 0;
+
+// 显示模式选择器
+function showStudyModeSelector(goal) {
+  var hasGoal = goal && goal.trim().length > 0;
+  var html = "<div class="mode-select-overlay"><div class="mode-select-box">";
+  html += "<div class="mode-select-title">选择自习模式</div>";
+  // 模式1: 专注模式
+  html += "<div class="mode-card" onclick="enterFocusMode('" + goal.replace(/'/g,"\'") + "')">";
+  html += "<div class="mode-icon">🎯</div><div class="mode-name">专注模式</div>";
+  html += "<div class="mode-desc">保留逻辑树，全神贯注解题</div></div>";
+  // 模式2: 凝思模式
+  html += "<div class="mode-card" onclick="enterQuoteMode()">";
+  html += "<div class="mode-icon">⏳</div><div class="mode-name">凝思模式</div>";
+  html += "<div class="mode-desc">时间沙漏与物理格言相伴</div></div>";
+  // 模式3: 梳理模式（仅在有目标时显示）
+  if(hasGoal) {
+    html += "<div class="mode-card" onclick="enterSummaryMode('" + goal.replace(/'/g,"\'") + "')">";
+    html += "<div class="mode-icon">📋</div><div class="mode-name">梳理模式</div>";
+    html += "<div class="mode-desc">知识点分条列项系统回顾</div></div>";
+  }
+  html += "</div></div>";
+  var el = document.getElementById("modeSelector");
+  if(el) { el.innerHTML = html; el.style.display = "block"; }
+}
+
+function hideModeSelector() {
+  var el = document.getElementById("modeSelector");
+  if(el) el.style.display = "none";
+}
 
 function enterStudyRoom() {
   STUDY_MODE = true;
   STUDY_START = Date.now();
-  // 显示目标输入弹窗
   var goal = prompt("写下你今天想攻克的一个物理卡点（一句话）：", "");
-  if(goal && goal.trim()) {
-    STUDY_GOAL = goal.trim();
-  } else {
-    STUDY_GOAL = "探索物理世界";
-  }
-  // 显示自习室遮罩
+  STUDY_GOAL = (goal && goal.trim()) ? goal.trim() : "";
+  showStudyModeSelector(STUDY_GOAL);
+}
+
+// 模式1: 专注模式
+function enterFocusMode(goal) {
+  STUDY_MODE_TYPE = 1;
+  STUDY_GOAL = goal || "";
+  hideModeSelector();
   var overlay = document.getElementById("studyOverlay");
-  if(overlay) overlay.style.display = "flex";
-  // 隐藏额外元素
+  if(overlay) { overlay.style.display = "flex"; overlay.style.pointerEvents = "none"; }
   var nav = document.getElementById("moduleNav");
-  if(nav) nav.style.opacity = "0.3";
+  if(nav) nav.style.opacity = "0.15";
   var views = document.querySelector(".view-tabs");
-  if(views) views.style.opacity = "0.3";
+  if(views) views.style.opacity = "0.15";
   var footer = document.querySelector("footer");
-  if(footer) footer.style.opacity = "0.3";
-  // 切换背景
+  if(footer) footer.style.opacity = "0.15";
+  var weather = document.getElementById("physicsWeather");
+  if(weather) weather.style.opacity = "0";
+  var mainContent = document.querySelector(".main-content, .app-container, #app");
+  if(mainContent) mainContent.style.opacity = "1";
   document.body.style.backgroundColor = "#C7EDCC";
   document.body.style.transition = "background-color 0.5s";
-  // 显示目标
+  document.getElementById("studyArea").style.display = "block";
+  document.getElementById("focusArea").style.display = "block";
+  document.getElementById("quoteArea").style.display = "none";
+  document.getElementById("summaryArea").style.display = "none";
   var goalEl = document.getElementById("studyGoal");
-  if(goalEl) { goalEl.textContent = "今日目标: " + STUDY_GOAL; goalEl.style.display = "block"; }
-  // 更新定时器
+  if(goalEl && STUDY_GOAL) { goalEl.textContent = "🎯 " + STUDY_GOAL; goalEl.style.display = "block"; }
+  else if(goalEl) { goalEl.style.display = "none"; }
   updateStudyTimer();
   STUDY_TIMER = setInterval(updateStudyTimer, 60000);
-  // 隐藏天气（自习室模式下）
+  var weatherEl = document.getElementById("physicsWeather");
+  if(weatherEl) weatherEl.style.display = "none";
+  var roomBtn = document.getElementById("studyRoomBtn");
+  if(roomBtn) roomBtn.style.display = "none";
+}
+
+// 模式2: 凝思模式（时间沙漏+物理名言）
+function enterQuoteMode() {
+  STUDY_MODE_TYPE = 2;
+  hideModeSelector();
+  document.body.style.backgroundColor = "#1a1a2e";
+  document.body.style.transition = "background-color 0.5s";
+  var nav = document.getElementById("moduleNav");
+  if(nav) nav.style.opacity = "0";
+  var views = document.querySelector(".view-tabs");
+  if(views) views.style.opacity = "0";
   var weather = document.getElementById("physicsWeather");
-  if(weather) weather.style.display = "none";
-  // 隐藏进入按钮
-  var btn = document.getElementById("studyRoomBtn");
-  if(btn) btn.style.display = "none";
+  if(weather) weather.style.opacity = "0";
+  document.getElementById("focusArea").style.display = "none";
+  document.getElementById("summaryArea").style.display = "none";
+  document.getElementById("quoteArea").style.display = "flex";
+  var roomBtn = document.getElementById("studyRoomBtn");
+  if(roomBtn) roomBtn.style.display = "none";
+  // 显示名言轮播
+  showQuoteModeQuote();
+  STUDY_TIMER = setInterval(showQuoteModeQuote, 10000);
+}
+
+function showQuoteModeQuote() {
+  var el = document.getElementById("quoteText");
+  if(!el) return;
+  var quotes = [
+    "如果我看得更远，那是因为我站在巨人的肩膀上。——牛顿",
+    "给我一个支点，我可以撬动整个地球。——阿基米德",
+    "宇宙最不可理解的事情，是它居然是可以被理解的。——爱因斯坦",
+    "想象力比知识更重要。——爱因斯坦",
+    "不要停止提问。——爱因斯坦",
+    "物理定律是上帝思想的印记。——开普勒",
+    "在科学上，每一条道路都应该走一走。——法拉第",
+    "自然界喜欢简单。——牛顿",
+    "理解物理，就是理解世界如何运作。",
+    "逻辑清晰，自然下笔有神。"
+  ];
+  var idx = Math.floor(Math.random() * quotes.length);
+  el.textContent = "\u201C" + quotes[idx] + "\u201D";
+}
+
+// 模式3: 梳理模式（知识点总结）
+function enterSummaryMode(goal) {
+  STUDY_MODE_TYPE = 3;
+  STUDY_GOAL = goal || "";
+  hideModeSelector();
+  document.body.style.backgroundColor = "#FDF6E3";
+  document.body.style.transition = "background-color 0.5s";
+  var nav = document.getElementById("moduleNav");
+  if(nav) nav.style.opacity = "0";
+  var views = document.querySelector(".view-tabs");
+  if(views) views.style.opacity = "0";
+  var weather = document.getElementById("physicsWeather");
+  if(weather) weather.style.opacity = "0";
+  document.getElementById("focusArea").style.display = "none";
+  document.getElementById("quoteArea").style.display = "none";
+  document.getElementById("summaryArea").style.display = "block";
+  var roomBtn = document.getElementById("studyRoomBtn");
+  if(roomBtn) roomBtn.style.display = "none";
+  // 生成知识点总结
+  generateSummary(STUDY_GOAL);
+}
+
+function generateSummary(goal) {
+  var el = document.getElementById("summaryContent");
+  if(!el) return;
+  var input = goal.toLowerCase();
+  var html = "<div class="summary-title">\u{1F4D6} 基于你的目标，为你梳理以下知识点</div>";
+  // 从 LOGIC_TREES 中匹配
+  var found = false;
+  var moduleNames = LOGIC_TREES ? Object.keys(LOGIC_TREES) : [];
+  for(var m=0; m<moduleNames.length; m++) {
+    var modName = moduleNames[m];
+    if(input.indexOf(modName.toLowerCase()) >= 0) {
+      found = true;
+      var mod = LOGIC_TREES[modName];
+      var steps = mod.steps || [];
+      html += "<div class="summary-module">";
+      html += "<div class="summary-module-title">\u{1F539} " + modName + "</div>";
+      html += "<div class="summary-intro">" + (mod.intro || "") + "</div>";
+      html += "<div class="summary-steps">";
+      for(var s=0; s<steps.length; s++) {
+        html += "<div class="summary-step">";
+        html += "<div class="summary-step-name">" + steps[s].name + "</div>";
+        html += "<div class="summary-step-desc">" + steps[s].desc + "</div>";
+        if(steps[s].tip) html += "<div class="summary-step-tip">\u{26A0} " + steps[s].tip + "</div>";
+        html += "</div>";
+      }
+      html += "</div></div>";
+    }
+  }
+  // 检查双路径
+  for(var m=0; m<moduleNames.length; m++) {
+    var modName = moduleNames[m];
+    if(input.indexOf(modName.toLowerCase()) >= 0) {
+      var mod = LOGIC_TREES[modName];
+      if(mod.dualSteps && mod.dualSteps.length > 0) {
+        html += "<div class="summary-module">";
+        html += "<div class="summary-module-title">\u{1F538} " + modName + "（能量视角）</div>";
+        html += "<div class="summary-steps">";
+        for(var s=0; s<mod.dualSteps.length; s++) {
+          html += "<div class="summary-step">";
+          html += "<div class="summary-step-name">" + mod.dualSteps[s].name + "</div>";
+          html += "<div class="summary-step-desc">" + mod.dualSteps[s].desc + "</div>";
+          if(mod.dualSteps[s].tip) html += "<div class="summary-step-tip">\u{26A0} " + mod.dualSteps[s].tip + "</div>";
+          html += "</div>";
+        }
+        html += "</div></div>";
+      }
+    }
+  }
+  if(!found) {
+    html += "<div class="summary-empty">\u{1F4AD} 没有找到完全匹配的知识点，但别担心——" +
+             "你的每一次梳理都是在加固物理思维。\u{1F680}</div>";
+  }
+  html += "<div style="text-align:center;margin-top:24px;">" +
+           "<button onclick="exitStudyRoom()" style="padding:10px 30px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">退出自习室</button></div>";
+  el.innerHTML = html;
 }
 
 function exitStudyRoom() {
   if(!STUDY_MODE) return;
   STUDY_MODE = false;
   var elapsed = Math.floor((Date.now() - STUDY_START) / 60000);
-  // 停止计时器
   if(STUDY_TIMER) { clearInterval(STUDY_TIMER); STUDY_TIMER = null; }
-  // 停止音频
   stopNoise();
-  // 保存自习记录
   var stats = JSON.parse(localStorage.getItem("studyStats") || "{\"totalMin\":0,\"sessions\":0}");
   stats.totalMin += elapsed;
   stats.sessions += 1;
   localStorage.setItem("studyStats", JSON.stringify(stats));
-  // 还原界面
   var overlay = document.getElementById("studyOverlay");
   if(overlay) overlay.style.display = "none";
+  document.getElementById("focusArea").style.display = "none";
+  document.getElementById("quoteArea").style.display = "none";
+  document.getElementById("summaryArea").style.display = "none";
   var nav = document.getElementById("moduleNav");
   if(nav) nav.style.opacity = "1";
   var views = document.querySelector(".view-tabs");
@@ -2587,11 +2742,11 @@ function exitStudyRoom() {
   document.body.style.backgroundColor = "";
   var goalEl = document.getElementById("studyGoal");
   if(goalEl) goalEl.style.display = "none";
-  var weather = document.getElementById("physicsWeather");
-  if(weather) weather.style.display = "block";
-  var btn = document.getElementById("studyRoomBtn");
-  if(btn) btn.style.display = "flex";
-  // 退出弹窗
+  var weatherEl = document.getElementById("physicsWeather");
+  if(weatherEl) { weatherEl.style.display = "block"; weatherEl.style.opacity = "1"; }
+  var roomBtn = document.getElementById("studyRoomBtn");
+  if(roomBtn) roomBtn.style.display = "flex";
+  hideModeSelector();
   var msg = "今天你完成了 " + elapsed + " 分钟的专注梳理。";
   if(STUDY_GOAL) msg += "\n\n今天你攻克了「" + STUDY_GOAL + "」吗？无论进度如何，你已经在路上了。";
   msg += "\n\n你距离清晰又近了一步。";
@@ -2603,12 +2758,10 @@ function updateStudyTimer() {
   var el = document.getElementById("studyTimer");
   if(!el) return;
   var min = Math.floor((Date.now() - STUDY_START) / 60000);
-  el.textContent = "已专注 " + min + " 分钟";
+  el.textContent = "\u23F3 已专注 " + min + " 分钟";
 }
 
-// 白噪音控制
 var AUDIO_ELEMENTS = {};
-
 function playNoise(type) {
   stopNoise();
   var src = "";
@@ -2618,18 +2771,14 @@ function playNoise(type) {
   if(!src) return;
   var audio = document.getElementById("studyAudio");
   if(audio) {
-    audio.src = src;
-    audio.loop = true;
-    audio.volume = 0.3;
+    audio.src = src; audio.loop = true; audio.volume = 0.3;
     audio.play().catch(function(){});
-    // 高亮选中按钮
     var btns = document.querySelectorAll(".noise-btn");
     for(var i=0;i<btns.length;i++) btns[i].classList.remove("noise-active");
-    var btn = document.getElementById("noise-"+type);
+    var btn = document.getElementById("noise-" + type);
     if(btn) btn.classList.add("noise-active");
   }
 }
-
 function stopNoise() {
   var audio = document.getElementById("studyAudio");
   if(audio) { audio.pause(); audio.src = ""; }
@@ -2637,7 +2786,6 @@ function stopNoise() {
   var btns = document.querySelectorAll(".noise-btn");
   for(var i=0;i<btns.length;i++) btns[i].classList.remove("noise-active");
 }
-
 function loadStudyStats() {
   var el = document.getElementById("studyStats");
   if(!el) return;
@@ -2645,13 +2793,11 @@ function loadStudyStats() {
   el.textContent = "\u{1F4CA} 你已累计专注 " + stats.totalMin + " 分钟，完成了 " + stats.sessions + " 次物理梳理。";
 }
 
-// 初始化
 (function() {
   updatePhysicsWeather();
   setInterval(updatePhysicsWeather, 60000);
   setTimeout(loadStudyStats, 500);
 })();
-
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
