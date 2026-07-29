@@ -2532,16 +2532,16 @@ function showStudyModeSelector(goal) {
   var hasGoal = goal && goal.trim().length > 0;
   var el = document.getElementById("modeSelector");
   if(!el) return;
-  var html = "<div class=\"mode-select-overlay\"><div class=\"mode-select-box\">";
+  var html = '<div class="mode-select-overlay"><div class="mode-select-box">';
   html += "<div class=\"mode-select-title\">选择自习模式</div>";
-  html += "<div class=\"mode-card\" data-mode=\"focus\">";
+  html += '<div class="mode-card" data-mode="focus">';
   html += "<div class=\"mode-icon\">🎯</div><div class=\"mode-name\">专注模式</div>";
   html += "<div class=\"mode-desc\">保留逻辑树，全神贯注解题</div></div>";
-  html += "<div class=\"mode-card\" data-mode=\"quote\">";
+  html += '<div class="mode-card" data-mode="quote">';
   html += "<div class=\"mode-icon\">⏳</div><div class=\"mode-name\">凝思模式</div>";
   html += "<div class=\"mode-desc\">时间沙漏与物理格言相伴</div></div>";
   if(hasGoal) {
-    html += "<div class=\"mode-card\" data-mode=\"summary\">";
+    html += '<div class="mode-card" data-mode="summary">';
     html += "<div class=\"mode-icon\">📋</div><div class=\"mode-name\">梳理模式</div>";
     html += "<div class=\"mode-desc\">知识点分条列项系统回顾</div></div>";
   }
@@ -2662,7 +2662,7 @@ function generateSummary(goal) {
   var el = document.getElementById("summaryContent");
   if(!el) return;
   var input = goal.toLowerCase();
-  var html = "<div class="summary-title">\u{1F4D6} 基于你的目标，为你梳理以下知识点</div>";
+  var html = '<div class="summary-title">\u{1F4D6} 基于你的目标，为你梳理以下知识点</div>';
   // 从 LOGIC_TREES 中匹配
   var found = false;
   var moduleNames = LOGIC_TREES ? Object.keys(LOGIC_TREES) : [];
@@ -2672,18 +2672,18 @@ function generateSummary(goal) {
       found = true;
       var mod = LOGIC_TREES[modName];
       var steps = mod.steps || [];
-      html += "<div class="summary-module">";
-      html += "<div class="summary-module-title">\u{1F539} " + modName + "</div>";
-      html += "<div class="summary-intro">" + (mod.intro || "") + "</div>";
-      html += "<div class="summary-steps">";
+      html += '<div class="summary-module">';
+      html += '<div class="summary-module-title">\u{1F539} ' + modName + '</div>';
+      html += '<div class="summary-intro">' + (mod.intro || '') + '</div>';
+      html += '<div class="summary-steps">';
       for(var s=0; s<steps.length; s++) {
-        html += "<div class="summary-step">";
-        html += "<div class="summary-step-name">" + steps[s].name + "</div>";
-        html += "<div class="summary-step-desc">" + steps[s].desc + "</div>";
-        if(steps[s].tip) html += "<div class="summary-step-tip">\u{26A0} " + steps[s].tip + "</div>";
-        html += "</div>";
+        html += '<div class="summary-step">';
+        html += '<div class="summary-step-name">' + steps[s].name + '</div>';
+        html += '<div class="summary-step-desc">' + steps[s].desc + '</div>';
+        if(steps[s].tip) html += '<div class="summary-step-tip">\u{26A0} ' + steps[s].tip + '</div>';
+        html += '</div>';
       }
-      html += "</div></div>";
+      html += '</div></div>';
     }
   }
   // 检查双路径
@@ -2692,26 +2692,26 @@ function generateSummary(goal) {
     if(input.indexOf(modName.toLowerCase()) >= 0) {
       var mod = LOGIC_TREES[modName];
       if(mod.dualSteps && mod.dualSteps.length > 0) {
-        html += "<div class="summary-module">";
-        html += "<div class="summary-module-title">\u{1F538} " + modName + "（能量视角）</div>";
-        html += "<div class="summary-steps">";
+        html += '<div class="summary-module">';
+        html += '<div class="summary-module-title">\u{1F538} ' + modName + '\uff08\u80fd\u91cf\u89c6\u89d2\uff09</div>';
+        html += '<div class="summary-steps">';
         for(var s=0; s<mod.dualSteps.length; s++) {
-          html += "<div class="summary-step">";
-          html += "<div class="summary-step-name">" + mod.dualSteps[s].name + "</div>";
-          html += "<div class="summary-step-desc">" + mod.dualSteps[s].desc + "</div>";
-          if(mod.dualSteps[s].tip) html += "<div class="summary-step-tip">\u{26A0} " + mod.dualSteps[s].tip + "</div>";
-          html += "</div>";
+          html += '<div class="summary-step">';
+          html += '<div class="summary-step-name">' + mod.dualSteps[s].name + '</div>';
+          html += '<div class="summary-step-desc">' + mod.dualSteps[s].desc + '</div>';
+          if(mod.dualSteps[s].tip) html += '<div class="summary-step-tip">\u{26A0} ' + mod.dualSteps[s].tip + '</div>';
+          html += '</div>';
         }
-        html += "</div></div>";
+        html += '</div></div>';
       }
     }
   }
   if(!found) {
-    html += "<div class="summary-empty">\u{1F4AD} 没有找到完全匹配的知识点，但别担心——" +
+    html += '<div class="summary-empty">\u{1F4AD} \u6ca1\u6709\u627e\u5230\u5b8c\u5168\u5339\u914d\u7684\u77e5\u8bc6\u70b9\uff0c\u4f46\u522b\u62c5\u5fc3\u2014\u2014' +
              "你的每一次梳理都是在加固物理思维。\u{1F680}</div>";
   }
-  html += "<div style="text-align:center;margin-top:24px;">" +
-           "<button onclick="exitStudyRoom()" style="padding:10px 30px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">退出自习室</button></div>";
+  html += '<div style="text-align:center;margin-top:24px;">' +
+           '<button onclick="exitStudyRoom()" style="padding:10px 30px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">\u9000\u51fa\u81ea\u4e60\u5ba4</button></div>';
   el.innerHTML = html;
 }
 
@@ -2798,6 +2798,7 @@ function loadStudyStats() {
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+
 
 
 
