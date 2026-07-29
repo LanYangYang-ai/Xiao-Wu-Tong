@@ -2420,7 +2420,7 @@ function shufflePick(arr, n) {
 function showQuestion(idx) {
   QUIZ_STATE.index = idx;
   var q = QUIZ_STATE.batch[idx];
-  var html = '<div class="quiz-overlay"><div class="quiz-box"><div class="quiz-counter">第'+(idx+1)+'/'+QUIZ_STATE.batch.length+'题</div>';
+  var html = '<div class="quiz-overlay"><div class="quiz-box"><div class="quiz-close" onclick="closeQuiz()">&times;</div><div class="quiz-counter">第'+(idx+1)+'/'+QUIZ_STATE.batch.length+'题</div>';
   html += '<div class="quiz-stem">'+q.stem+'</div><div class="quiz-options">';
   for(var i=0;i<q.options.length;i++) {
     html += '<div class="quiz-option" onclick="submitQuizAnswer('+i+')">'+q.options[i]+'</div>';
@@ -2435,7 +2435,7 @@ function submitQuizAnswer(selected) {
   QUIZ_STATE.total++;
   if(isCorrect) QUIZ_STATE.correct++;
   QUIZ_STATE.results.push({q:q, selected:selected, correct:isCorrect});
-  var html = '<div class="quiz-overlay"><div class="quiz-box">';
+  var html = '<div class="quiz-overlay"><div class="quiz-box"><div class="quiz-close" onclick="closeQuiz()">&times;</div>';
   if(isCorrect) {
     html += '<div class="quiz-result quiz-correct">&#10004; 回答正确！</div>';
   } else {
