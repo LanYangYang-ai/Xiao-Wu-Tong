@@ -186,21 +186,35 @@ var KNOWLEDGE_TREE = {branches:[
 </div>
 
 <!-- 自习室遮罩 -->
-<div id="studyOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9998;pointer-events:none;">
-  <div id="studyTimer" style="position:fixed;top:20px;right:24px;font-size:18px;font-weight:600;color:#2c3e50;font-family:Georgia,serif;z-index:9999;pointer-events:auto;"></div>
-  <div id="studyGoal" style="position:fixed;bottom:80px;left:24px;font-size:14px;color:#555;font-style:italic;font-family:Georgia,serif;max-width:300px;line-height:1.6;z-index:9999;pointer-events:auto;display:none;"></div>
-  <!-- 白噪音控制 -->
-  <div id="noiseControl" style="position:fixed;bottom:24px;right:24px;z-index:9999;pointer-events:auto;">
+<!-- 模式选择器 -->
+<div id="modeSelector" style="display:none;"></div>
+
+<!-- 专注模式遮罩（含计时+白噪音+目标） -->
+<div id="studyOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9998;pointer-events:none;"></div>
+<div id="focusArea" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;pointer-events:none;">
+  <div id="studyTimer" style="position:fixed;top:20px;right:24px;font-size:18px;font-weight:600;color:#2c3e50;font-family:Georgia,serif;pointer-events:auto;"></div>
+  <div id="studyGoal" style="position:fixed;bottom:80px;left:24px;font-size:14px;color:#555;font-style:italic;font-family:Georgia,serif;max-width:300px;line-height:1.6;pointer-events:auto;display:none;"></div>
+  <div id="noiseControl" style="position:fixed;bottom:24px;right:24px;pointer-events:auto;">
     <div style="font-size:12px;color:#888;margin-bottom:6px;text-align:center;">🔊 白噪音</div>
     <div style="display:flex;gap:6px;">
       <button class="noise-btn" id="noise-gravity" onclick="playNoise('gravity')" title="重力波">🌊 重力波</button>
       <button class="noise-btn" id="noise-star" onclick="playNoise('star')" title="恒星燃烧">🔥 恒星燃烧</button>
       <button class="noise-btn" id="noise-silence" onclick="playNoise('silence')" title="星际静默">✨ 星际静默</button>
     </div>
-    <div style="text-align:center;margin-top:4px;">
-      <span style="font-size:11px;color:#aaa;cursor:pointer;" onclick="exitStudyRoom()">退出自习室</span>
-    </div>
+    <div style="text-align:center;margin-top:4px;"><span style="font-size:11px;color:#aaa;cursor:pointer;" onclick="exitStudyRoom()">退出自习室</span></div>
   </div>
+</div>
+
+<!-- 凝思模式（时间沙漏+名言） -->
+<div id="quoteArea" style="display:none;">
+  <div id="studyTimer" style="font-size:72px;color:#e8d5b7;font-weight:300;font-family:Georgia,serif;margin-bottom:40px;"></div>
+  <div id="quoteText" style="font-size:22px;color:#a8a8c0;font-style:italic;max-width:600px;text-align:center;line-height:1.8;padding:0 24px;"></div>
+  <div style="margin-top:40px;"><span style="font-size:13px;color:#666;cursor:pointer;border:1px solid #555;padding:8px 20px;border-radius:20px;" onclick="exitStudyRoom()">退出自习室</span></div>
+</div>
+
+<!-- 梳理模式（知识点总结） -->
+<div id="summaryArea" style="display:none;">
+  <div id="summaryContent" style="max-width:650px;margin:0 auto;padding:24px 16px 80px;"></div>
 </div>
 
 <!-- 白噪音音频（用户自行准备音频文件） -->
