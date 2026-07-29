@@ -535,3 +535,71 @@ body {
   font-size:12px;color:#95a5a6;text-align:center;
   padding:4px 0;margin-top:4px;
 }
+
+/* ==================== 自习室模块 ==================== */
+#studyRoomBtn {
+  position:fixed;bottom:20px;left:20px;z-index:9997;
+  background:#27ae60;color:#fff;border:none;border-radius:30px;
+  padding:10px 20px;font-size:14px;cursor:pointer;
+  box-shadow:0 4px 15px rgba(39,174,96,0.4);
+  display:flex;align-items:center;gap:6px;
+  transition:all 0.3s;font-family:inherit;
+}
+#studyRoomBtn:hover { background:#219a52;transform:translateY(-2px);box-shadow:0 6px 20px rgba(39,174,96,0.5); }
+
+/* 模式选择器 */
+.mode-select-overlay {
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);z-index:10001;
+  display:flex;align-items:center;justify-content:center;
+}
+.mode-select-box {
+  background:#fff;border-radius:20px;padding:36px;
+  max-width:520px;width:90%;text-align:center;
+  box-shadow:0 10px 50px rgba(0,0,0,0.3);
+  animation:modeIn 0.3s ease;
+}
+@keyframes modeIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+.mode-select-title { font-size:22px;font-weight:700;color:#2c3e50;margin-bottom:24px; }
+.mode-card {
+  display:inline-block;width:140px;padding:20px 16px;margin:8px;
+  background:#f8f9fa;border:2px solid #e8ecf1;border-radius:14px;
+  cursor:pointer;transition:all 0.3s;vertical-align:top;
+}
+.mode-card:hover { background:#e8f8f0;border-color:#27ae60;transform:translateY(-3px);box-shadow:0 6px 20px rgba(39,174,96,0.15); }
+.mode-icon { font-size:36px;margin-bottom:8px; }
+.mode-name { font-size:16px;font-weight:600;color:#2c3e50;margin-bottom:6px; }
+.mode-desc { font-size:12px;color:#7f8c8d;line-height:1.5; }
+
+/* 模式区域 */
+#focusArea, #quoteArea, #summaryArea { display:none; }
+
+/* 凝思模式 */
+#quoteArea {
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:9998;flex-direction:column;align-items:center;
+  justify-content:center;background:#1a1a2e;
+}
+#quoteArea #studyTimer { font-size:72px;color:#e8d5b7;font-weight:300;font-family:Georgia,serif;margin-bottom:40px; }
+#quoteArea #quoteText { font-size:22px;color:#a8a8c0;font-style:italic;max-width:600px;text-align:center;line-height:1.8;padding:0 24px; }
+
+/* 梳理模式 */
+#summaryArea {
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:9998;overflow-y:auto;background:#FDF6E3;
+}
+.summary-title { font-size:20px;font-weight:700;color:#2c3e50;text-align:center;padding:32px 16px 16px; }
+.summary-module { max-width:600px;margin:16px auto;background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+.summary-module-title { font-size:18px;font-weight:600;color:#27ae60;margin-bottom:8px; }
+.summary-intro { font-size:13px;color:#7f8c8d;margin-bottom:16px;font-style:italic; }
+.summary-step { padding:12px 0;border-bottom:1px solid #f0f0f0; }
+.summary-step:last-child { border-bottom:none; }
+.summary-step-name { font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:4px; }
+.summary-step-desc { font-size:13px;color:#555;line-height:1.6; }
+.summary-step-tip { font-size:12px;color:#e67e22;margin-top:4px;padding:6px 10px;background:#fef9e7;border-radius:6px; }
+.summary-empty { text-align:center;font-size:16px;color:#7f8c8d;padding:40px;line-height:1.8; }
+
+.noise-btn { background:rgba(255,255,255,0.85);border:1px solid #ddd;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;transition:all 0.2s;font-family:inherit;white-space:nowrap; }
+.noise-btn:hover { background:#fff;border-color:#27ae60; }
+.noise-btn.noise-active { background:#27ae60;color:#fff;border-color:#27ae60; }
+#studyStats { font-size:12px;color:#95a5a6;text-align:center;padding:4px 0;margin-top:4px; }
