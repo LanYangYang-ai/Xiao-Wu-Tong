@@ -509,3 +509,29 @@ body {
   background:#f0f0f0;display:flex;align-items:center;justify-content:center;
 }
 .quiz-close:hover { background:#e74c3c;color:#fff; }
+
+/* ==================== 自习室模块 ==================== */
+#studyRoomBtn {
+  position:fixed;bottom:20px;left:20px;z-index:9997;
+  background:#27ae60;color:#fff;border:none;border-radius:30px;
+  padding:10px 20px;font-size:14px;cursor:pointer;
+  box-shadow:0 4px 15px rgba(39,174,96,0.4);
+  display:flex;align-items:center;gap:6px;
+  transition:all 0.3s;font-family:inherit;
+}
+#studyRoomBtn:hover {
+  background:#219a52;transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(39,174,96,0.5);
+}
+.noise-btn {
+  background:rgba(255,255,255,0.85);border:1px solid #ddd;
+  border-radius:20px;padding:6px 12px;font-size:12px;
+  cursor:pointer;transition:all 0.2s;font-family:inherit;
+  white-space:nowrap;
+}
+.noise-btn:hover { background:#fff;border-color:#27ae60; }
+.noise-btn.noise-active { background:#27ae60;color:#fff;border-color:#27ae60; }
+#studyStats {
+  font-size:12px;color:#95a5a6;text-align:center;
+  padding:4px 0;margin-top:4px;
+}
