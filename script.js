@@ -2680,63 +2680,72 @@ function enterSummaryMode(goal) {
   startTimer();
 }
 
+
 function generateSummary(goal) {
   var el = document.getElementById("summaryContent");
   if(!el) return;
   var input = goal.toLowerCase();
-  var html = '<div class="summary-title">\u{1F4D6} 基于你的目标，为你梳理以下知识点</div>';
-  // 从 LOGIC_TREES 中匹配
+  var html = '';
+  // 标题
+  html += '<div style="text-align:center;padding:28px 16px 8px;">';
+  html += '<div style="font-size:24px;margin-bottom:4px;">\u{1F4D6}</div>';
+  html += '<div style="font-size:18px;font-weight:600;color:#2c3e50;">\u57FA\u4E8E\u4F60\u7684\u76EE\u6807\uFF0C\u4E3A\u4F60\u68B3\u7406\u4EE5\u4E0B\u77E5\u8BC6\u70B9</div>';
+  html += '<div style="font-size:13px;color:#95a5a6;margin-top:6px;">' + goal + '</div></div>';
   var found = false;
   var moduleNames = LOGIC_TREES ? Object.keys(LOGIC_TREES) : [];
   for(var m=0; m<moduleNames.length; m++) {
     var modName = moduleNames[m];
-    if(input.indexOf(modName.toLowerCase()) >= 0) {
+    if(!LOGIC_TREES[modName]) continue;
+    var mod = LOGIC_TREES[modName];
+    var modMatch = input.indexOf(modName.toLowerCase()) >= 0;
+    var stepMatch = false;
+    var matchedIds = {};
+    var allSteps = (mod.steps || []).concat(mod.dualSteps || []);
+    for(var si=0; si<allSteps.length; si++) {
+      var st = allSteps[si];
+      if(!st || !st.name) continue;
+      var shortName = st.name.replace(/^\d+\s*[\u4e00-\u9fa5]+\s*/, "").toLowerCase();
+      if(input.indexOf(shortName) >= 0) { stepMatch = true; matchedIds[si] = true; }
+      if(st.desc && input.indexOf(st.desc.substring(0,6).toLowerCase()) >= 0) { stepMatch = true; matchedIds[si] = true; }
+    }
+    if(modMatch || stepMatch) {
       found = true;
-      var mod = LOGIC_TREES[modName];
-      var steps = mod.steps || [];
       html += '<div class="summary-module">';
-      html += '<div class="summary-module-title">\u{1F539} ' + modName + '</div>';
-      html += '<div class="summary-intro">' + (mod.intro || '') + '</div>';
+      html += '<div class="summary-module-title" style="font-size:17px;font-weight:600;color:#27ae60;margin-bottom:4px;">';
+      html += (modMatch ? "\u{1F539} " : "\u{1F538} ") + modName + "</div>";
+      html += '<div class="summary-intro" style="font-size:13px;color:#7f8c8d;margin-bottom:12px;font-style:italic;">' + (mod.intro || '\u638C\u63E1\u8FD9\u4E9B\u6B65\u9AA4\uFF0C\u89E3\u51B3\u6B64\u7C7B\u95EE\u9898') + '</div>';
+      var displaySteps = [];
+      if(stepMatch) { for(var si=0; si<allSteps.length; si++) { if(matchedIds[si]) displaySteps.push(allSteps[si]); } }
+      if(displaySteps.length === 0) displaySteps = allSteps;
+      if(displaySteps.length > 5) displaySteps = displaySteps.slice(0,5);
       html += '<div class="summary-steps">';
-      for(var s=0; s<steps.length; s++) {
-        html += '<div class="summary-step">';
-        html += '<div class="summary-step-name">' + steps[s].name + '</div>';
-        html += '<div class="summary-step-desc">' + steps[s].desc + '</div>';
-        if(steps[s].tip) html += '<div class="summary-step-tip">\u{26A0} ' + steps[s].tip + '</div>';
+      for(var si=0; si<displaySteps.length; si++) {
+        var st = displaySteps[si]; if(!st) continue;
+        var hl = matchedIds[si] ? "background:#e8f8f0;border-radius:8px;" : "";
+        html += "<div class=\"summary-step\" style=\"" + hl + "padding:10px 0;border-bottom:1px solid #f0f0f0;\">";
+        html += "<div class=\"summary-step-name\" style=\"font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:2px;\">" + st.name + "</div>";
+        html += "<div class=\"summary-step-desc\" style=\"font-size:13px;color:#555;line-height:1.6;\">" + st.desc + "</div>";
+        if(st.tip) html += "<div class=\"summary-step-tip\" style=\"font-size:12px;color:#e67e22;margin-top:4px;padding:5px 10px;background:#fef9e7;border-radius:6px;\">\u26A0 " + st.tip + "</div>";
         html += '</div>';
       }
       html += '</div></div>';
     }
   }
-  // 检查双路径
-  for(var m=0; m<moduleNames.length; m++) {
-    var modName = moduleNames[m];
-    if(input.indexOf(modName.toLowerCase()) >= 0) {
-      var mod = LOGIC_TREES[modName];
-      if(mod.dualSteps && mod.dualSteps.length > 0) {
-        html += '<div class="summary-module">';
-        html += '<div class="summary-module-title">\u{1F538} ' + modName + '\uff08\u80fd\u91cf\u89c6\u89d2\uff09</div>';
-        html += '<div class="summary-steps">';
-        for(var s=0; s<mod.dualSteps.length; s++) {
-          html += '<div class="summary-step">';
-          html += '<div class="summary-step-name">' + mod.dualSteps[s].name + '</div>';
-          html += '<div class="summary-step-desc">' + mod.dualSteps[s].desc + '</div>';
-          if(mod.dualSteps[s].tip) html += '<div class="summary-step-tip">\u{26A0} ' + mod.dualSteps[s].tip + '</div>';
-          html += '</div>';
-        }
-        html += '</div></div>';
-      }
-    }
-  }
   if(!found) {
-    html += '<div class="summary-empty">\u{1F4AD} \u6ca1\u6709\u627e\u5230\u5b8c\u5168\u5339\u914d\u7684\u77e5\u8bc6\u70b9\uff0c\u4f46\u522b\u62c5\u5fc3\u2014\u2014' +
-             "你的每一次梳理都是在加固物理思维。\u{1F680}</div>";
+    html += '<div style="text-align:center;padding:20px;color:#7f8c8d;">';
+    html += '<div style="font-size:40px;margin-bottom:12px;">\u{1F4AD}</div>';
+    html += '<div style="font-size:16px;line-height:1.8;">\u6CA1\u6709\u627E\u5230\u5B8C\u5168\u5339\u914D\u7684\u77E5\u8BC6\u70B9\u3002</div>';
+    html += '<div style="font-size:14px;color:#95a5a6;margin-top:8px;">\u8BD5\u8BD5\u9009\u62E9\u4EE5\u4E0B\u6A21\u5757\u8FDB\u884C\u68B3\u7406\uFF1A</div></div>';
+    html += '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:12px 16px;">';
+    for(var m=0; m<Math.min(moduleNames.length, 8); m++) {
+      html += '<span style="padding:6px 14px;background:#e8f8f0;color:#27ae60;border-radius:20px;font-size:13px;cursor:pointer;" onclick="exitStudyRoom()">' + moduleNames[m] + '</span>';
+    }
+    html += '</div>';
   }
-  html += '<div style="text-align:center;margin-top:24px;">' +
-           '<button onclick="exitStudyRoom()" style="padding:10px 30px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">\u9000\u51fa\u81ea\u4e60\u5ba4</button></div>';
+  html += '<div style="text-align:center;padding:24px 0 40px;">';
+  html += '<button onclick="exitStudyRoom()" style="padding:10px 36px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">\u{1F6AA} \u9000\u51FA\u81EA\u4E60\u5BA4</button></div>';
   el.innerHTML = html;
 }
-
 function exitStudyRoom() {
   if(!STUDY_MODE) return;
   STUDY_MODE = false;
