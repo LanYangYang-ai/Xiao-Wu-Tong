@@ -403,7 +403,7 @@ function toggleStep(stepId) {
     }
     renderLogicTree();
     if (Object.keys(selectedSteps).length > 0) {
-        searchVideosForSelected();
+        showVideoSearchButton();
     } else {
         showVideoHint();
     }
@@ -418,10 +418,9 @@ function togglePath() {
 }
 
 // ==================== 搜索视频（选中步骤）====================
-function searchVideosForSelected() {
+function showVideoSearchButton() {
     var tree = LOGIC_TREES[currentModule];
     var activeSteps = usingDualPath && tree.dualSteps ? tree.dualSteps : tree.steps;
-
     var keywords = [];
     for (var i = 0; i < activeSteps.length; i++) {
         var s = activeSteps[i];
@@ -431,21 +430,22 @@ function searchVideosForSelected() {
             }
         }
     }
-
     if (keywords.length === 0) { showVideoHint(); return; }
-
-    dom.videoHint.textContent = "正在搜索相关讲解视频...";
+    dom.videoHint.textContent = "已选中 " + Object.keys(selectedSteps).length + " 个步骤，可选择以下操作";
     dom.videoGrid.innerHTML = "";
     dom.videoArea.style.display = "block";
-
-    // 直接跳转 B站 搜索
     var combinedKw = keywords.join(" ");
-    dom.videoHint.textContent = "正在跳转至 B站 搜索相关视频...";
-    dom.videoGrid.innerHTML = "";
     var url = "https://search.bilibili.com/video?keyword=" + encodeURIComponent(combinedKw + " 解题方法 知识点") + "&order=click&duration=2";
-    if (confirm("即将跳转至 B站 观看相关讲解视频，内容版权归原作者所有。确认跳转？")) {
-        window.open(url, "_blank");
-    }
+    // 合规性：显示B站搜索按钮，用户主动点击并确认后才跳转
+    var btn = document.createElement("button");
+    btn.textContent = "在B站观看相关讲解视频";
+    btn.style.cssText = "display:block;width:100%;padding:14px;margin-top:8px;background:#4a90d9;color:#fff;border:none;border-radius:10px;font-size:16px;cursor:pointer;transition:background 0.2s;";
+    btn.onclick = function() {
+        if (confirm("即将跳转至 B站 观看相关讲解视频，内容版权归原作者所有。确认跳转？")) {
+            window.open(url, "_blank");
+        }
+    };
+    dom.videoGrid.appendChild(btn);
 }
 // ==================== 学习足迹 ====================
 function updateFootprint() {
@@ -2496,6 +2496,7 @@ renderLogicTree = function() { _origRLT2(); setTimeout(addQuizButtons, 200); };
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+
 
 
 
