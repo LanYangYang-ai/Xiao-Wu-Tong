@@ -603,3 +603,7 @@ body {
 .noise-btn:hover { background:#fff;border-color:#27ae60; }
 .noise-btn.noise-active { background:#27ae60;color:#fff;border-color:#27ae60; }
 #studyStats { font-size:12px;color:#95a5a6;text-align:center;padding:4px 0;margin-top:4px; }
+
+#noiseControl { background:rgba(255,255,255,0.9);padding:12px 16px;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+#noiseControl .noise-btn { font-size:13px;padding:7px 14px; }
+#quoteArea .study-timer { font-size:72px;color:#e8d5b7;font-weight:300;font-family:Georgia,serif;position:relative; }
