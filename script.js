@@ -2631,6 +2631,7 @@ function enterQuoteMode() {
   if(roomBtn) roomBtn.style.display = "none";
   // 显示名言轮播
   showQuoteModeQuote();
+  startTimer();
   STUDY_TIMER = setInterval(showQuoteModeQuote, 10000);
 }
 
@@ -2675,6 +2676,7 @@ function enterSummaryMode(goal) {
   if(roomBtn) roomBtn.style.display = "none";
   // 生成知识点总结
   generateSummary(STUDY_GOAL);
+  startTimer();
 }
 
 function generateSummary(goal) {
