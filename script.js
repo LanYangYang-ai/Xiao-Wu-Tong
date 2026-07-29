@@ -2561,6 +2561,19 @@ function showStudyModeSelector(goal) {
   }
 }
 
+function hideModeSelector() {
+  var el = document.getElementById("modeSelector");
+  if(el) el.style.display = "none";
+}
+
+function enterStudyRoom() {
+  STUDY_MODE = true;
+  STUDY_START = Date.now();
+  var goal = prompt("写下你今天想攻克的一个物理卡点（一句话）：", "");
+  STUDY_GOAL = (goal && goal.trim()) ? goal.trim() : "";
+  showStudyModeSelector(STUDY_GOAL);
+}
+
 // 模式1: 专注模式
 function enterFocusMode(goal) {
   STUDY_MODE_TYPE = 1;
