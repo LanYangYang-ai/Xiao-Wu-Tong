@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
+<div id="physicsWeather" style="text-align:center;padding:6px 16px;font-size:13px;color:#7f8c8d;font-style:italic;letter-spacing:1px;"></div>
 <div class="header">
     <div class="header-main">
         <div class="header-left">
@@ -178,6 +179,33 @@ var KNOWLEDGE_TREE = {branches:[
 </script>
 <script src="script.js?v=5"></script>
 <div id="quizContainer" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:10000;pointer-events:none"></div>
+
+<!-- 自习室按钮 -->
+<div id="studyRoomBtn" onclick="enterStudyRoom()" title="进入专注状态">
+  <span>\u{1F3DA} 进入自习室</span>
+</div>
+
+<!-- 自习室遮罩 -->
+<div id="studyOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9998;pointer-events:none;">
+  <div id="studyTimer" style="position:fixed;top:20px;right:24px;font-size:18px;font-weight:600;color:#2c3e50;font-family:Georgia,serif;z-index:9999;pointer-events:auto;"></div>
+  <div id="studyGoal" style="position:fixed;bottom:80px;left:24px;font-size:14px;color:#555;font-style:italic;font-family:Georgia,serif;max-width:300px;line-height:1.6;z-index:9999;pointer-events:auto;display:none;"></div>
+  <!-- 白噪音控制 -->
+  <div id="noiseControl" style="position:fixed;bottom:24px;right:24px;z-index:9999;pointer-events:auto;">
+    <div style="font-size:12px;color:#888;margin-bottom:6px;text-align:center;">\u{1F50A} 白噪音</div>
+    <div style="display:flex;gap:6px;">
+      <button class="noise-btn" id="noise-gravity" onclick="playNoise('gravity')" title="重力波">\u{1F30A} 重力波</button>
+      <button class="noise-btn" id="noise-star" onclick="playNoise('star')" title="恒星燃烧">\u{1F525} 恒星燃烧</button>
+      <button class="noise-btn" id="noise-silence" onclick="playNoise('silence')" title="星际静默">\u{2728} 星际静默</button>
+    </div>
+    <div style="text-align:center;margin-top:4px;">
+      <span style="font-size:11px;color:#aaa;cursor:pointer;" onclick="exitStudyRoom()">退出自习室</span>
+    </div>
+  </div>
+</div>
+
+<!-- 白噪音音频（用户自行准备音频文件） -->
+<audio id="studyAudio" preload="none"></audio>
+
 </body>
 </html>
 
