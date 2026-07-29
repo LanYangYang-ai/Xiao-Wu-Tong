@@ -2493,6 +2493,165 @@ function addQuizButtons() {
 var _origRLT2 = renderLogicTree;
 renderLogicTree = function() { _origRLT2(); setTimeout(addQuizButtons, 200); };
 
+
+// ==================== 自习室模块 ====================
+// 物理天气
+var PHYSICS_WEATHER = [
+  {start:5, end:8, text:"清晨，物理世界正在苏醒。"},
+  {start:8, end:12, text:"万物都在遵守运动定律。"},
+  {start:12, end:14, text:"正午，能量守恒定律正忙着分配阳光。"},
+  {start:14, end:18, text:"熵在悄悄增加，你的专注在悄悄积累。"},
+  {start:18, end:20, text:"黄昏，光速依然恒定在30万公里/秒。"},
+  {start:20, end:23, text:"星河在旋转，你的思维也在旋转。"},
+  {start:23, end:5, text:"夜深了，但物理世界从不打烊。"}
+];
+
+function updatePhysicsWeather() {
+  var el = document.getElementById("physicsWeather");
+  if(!el) return;
+  var h = new Date().getHours();
+  for(var i=0;i<PHYSICS_WEATHER.length;i++) {
+    var w = PHYSICS_WEATHER[i];
+    if(w.start < w.end) { if(h >= w.start && h < w.end) { el.textContent = w.text; return; } }
+    else { if(h >= w.start || h < w.end) { el.textContent = w.text; return; } }
+  }
+  el.textContent = "物理世界永远值得探索。";
+}
+
+// 自习室状态
+var STUDY_MODE = false;
+var STUDY_START = null;
+var STUDY_GOAL = "";
+var STUDY_NOISE = null;
+var STUDY_TIMER = null;
+
+function enterStudyRoom() {
+  STUDY_MODE = true;
+  STUDY_START = Date.now();
+  // 显示目标输入弹窗
+  var goal = prompt("写下你今天想攻克的一个物理卡点（一句话）：", "");
+  if(goal && goal.trim()) {
+    STUDY_GOAL = goal.trim();
+  } else {
+    STUDY_GOAL = "探索物理世界";
+  }
+  // 显示自习室遮罩
+  var overlay = document.getElementById("studyOverlay");
+  if(overlay) overlay.style.display = "flex";
+  // 隐藏额外元素
+  var nav = document.getElementById("moduleNav");
+  if(nav) nav.style.opacity = "0.3";
+  var views = document.querySelector(".view-tabs");
+  if(views) views.style.opacity = "0.3";
+  var footer = document.querySelector("footer");
+  if(footer) footer.style.opacity = "0.3";
+  // 切换背景
+  document.body.style.backgroundColor = "#C7EDCC";
+  document.body.style.transition = "background-color 0.5s";
+  // 显示目标
+  var goalEl = document.getElementById("studyGoal");
+  if(goalEl) { goalEl.textContent = "今日目标: " + STUDY_GOAL; goalEl.style.display = "block"; }
+  // 更新定时器
+  updateStudyTimer();
+  STUDY_TIMER = setInterval(updateStudyTimer, 60000);
+  // 隐藏天气（自习室模式下）
+  var weather = document.getElementById("physicsWeather");
+  if(weather) weather.style.display = "none";
+  // 隐藏进入按钮
+  var btn = document.getElementById("studyRoomBtn");
+  if(btn) btn.style.display = "none";
+}
+
+function exitStudyRoom() {
+  if(!STUDY_MODE) return;
+  STUDY_MODE = false;
+  var elapsed = Math.floor((Date.now() - STUDY_START) / 60000);
+  // 停止计时器
+  if(STUDY_TIMER) { clearInterval(STUDY_TIMER); STUDY_TIMER = null; }
+  // 停止音频
+  stopNoise();
+  // 保存自习记录
+  var stats = JSON.parse(localStorage.getItem("studyStats") || "{\"totalMin\":0,\"sessions\":0}");
+  stats.totalMin += elapsed;
+  stats.sessions += 1;
+  localStorage.setItem("studyStats", JSON.stringify(stats));
+  // 还原界面
+  var overlay = document.getElementById("studyOverlay");
+  if(overlay) overlay.style.display = "none";
+  var nav = document.getElementById("moduleNav");
+  if(nav) nav.style.opacity = "1";
+  var views = document.querySelector(".view-tabs");
+  if(views) views.style.opacity = "1";
+  var footer = document.querySelector("footer");
+  if(footer) footer.style.opacity = "1";
+  document.body.style.backgroundColor = "";
+  var goalEl = document.getElementById("studyGoal");
+  if(goalEl) goalEl.style.display = "none";
+  var weather = document.getElementById("physicsWeather");
+  if(weather) weather.style.display = "block";
+  var btn = document.getElementById("studyRoomBtn");
+  if(btn) btn.style.display = "flex";
+  // 退出弹窗
+  var msg = "今天你完成了 " + elapsed + " 分钟的专注梳理。";
+  if(STUDY_GOAL) msg += "\n\n今天你攻克了「" + STUDY_GOAL + "」吗？无论进度如何，你已经在路上了。";
+  msg += "\n\n你距离清晰又近了一步。";
+  alert(msg);
+}
+
+function updateStudyTimer() {
+  if(!STUDY_START) return;
+  var el = document.getElementById("studyTimer");
+  if(!el) return;
+  var min = Math.floor((Date.now() - STUDY_START) / 60000);
+  el.textContent = "已专注 " + min + " 分钟";
+}
+
+// 白噪音控制
+var AUDIO_ELEMENTS = {};
+
+function playNoise(type) {
+  stopNoise();
+  var src = "";
+  if(type === "gravity") { src = "audio/gravity.mp3"; STUDY_NOISE = "gravity"; }
+  else if(type === "star") { src = "audio/star.mp3"; STUDY_NOISE = "star"; }
+  else if(type === "silence") { src = "audio/silence.mp3"; STUDY_NOISE = "silence"; }
+  if(!src) return;
+  var audio = document.getElementById("studyAudio");
+  if(audio) {
+    audio.src = src;
+    audio.loop = true;
+    audio.volume = 0.3;
+    audio.play().catch(function(){});
+    // 高亮选中按钮
+    var btns = document.querySelectorAll(".noise-btn");
+    for(var i=0;i<btns.length;i++) btns[i].classList.remove("noise-active");
+    var btn = document.getElementById("noise-"+type);
+    if(btn) btn.classList.add("noise-active");
+  }
+}
+
+function stopNoise() {
+  var audio = document.getElementById("studyAudio");
+  if(audio) { audio.pause(); audio.src = ""; }
+  STUDY_NOISE = null;
+  var btns = document.querySelectorAll(".noise-btn");
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove("noise-active");
+}
+
+function loadStudyStats() {
+  var el = document.getElementById("studyStats");
+  if(!el) return;
+  var stats = JSON.parse(localStorage.getItem("studyStats") || "{\"totalMin\":0,\"sessions\":0}");
+  el.textContent = "\u{1F4CA} 你已累计专注 " + stats.totalMin + " 分钟，完成了 " + stats.sessions + " 次物理梳理。";
+}
+
+// 初始化
+(function() {
+  updatePhysicsWeather();
+  setInterval(updatePhysicsWeather, 60000);
+  setTimeout(loadStudyStats, 500);
+})();
+
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
