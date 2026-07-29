@@ -2608,6 +2608,7 @@ function enterFocusMode(goal) {
   if(weatherEl) weatherEl.style.display = "none";
   var roomBtn = document.getElementById("studyRoomBtn");
   if(roomBtn) roomBtn.style.display = "none";
+  startTimer();
 }
 
 // 模式2: 凝思模式（时间沙漏+物理名言）
