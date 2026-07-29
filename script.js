@@ -850,6 +850,1649 @@ function tryBiliSearch(keyword, callback) {
     fetch("https://corsproxy.org/?url=" + encodeURIComponent(u)).then(function(r) { return r.json(); }).then(function(d) { scb(d); }).catch(function(){});
 }
 
+var QUESTIONS = {
+  "nd1": [
+    {
+      "stem": "用牛顿第二定律分析问题，第一步应该做什么？",
+      "options": [
+        "A. 直接写F=ma",
+        "B. 明确研究对象",
+        "C. 画受力图",
+        "D. 建坐标系"
+      ],
+      "correct": 1,
+      "explanation": "选对研究对象是解题的起点。",
+      "encouragement": "发现问题先找对象，好习惯！",
+      "tags": "研究对象"
+    },
+    {
+      "stem": "A、B两物体要求A对B的作用力，应该选谁研究？",
+      "options": [
+        "A. 选A",
+        "B. 选B",
+        "C. 选整体",
+        "D. 先整体后隔离B"
+      ],
+      "correct": 3,
+      "explanation": "先整体求加速度，再隔离B求内力。",
+      "encouragement": "整体隔离法是关键方法！",
+      "tags": "整体法隔离法"
+    },
+    {
+      "stem": "研究对象选错最常见的后果？",
+      "options": [
+        "A. 公式用错",
+        "B. 漏掉或多了力",
+        "C. 方向反了",
+        "D. 质量算错"
+      ],
+      "correct": 1,
+      "explanation": "选错对象会漏掉或多余某些力。",
+      "encouragement": "犯错是进步的开始。",
+      "tags": "研究对象选取"
+    },
+    {
+      "stem": "整体法中绳子拉力属于什么力？",
+      "options": [
+        "A. 外力",
+        "B. 内力",
+        "C. 有时外力",
+        "D. 重力"
+      ],
+      "correct": 1,
+      "explanation": "系统内部物体间力是内力，整体方程中不出现。",
+      "encouragement": "内力不出现！",
+      "tags": "内力外力"
+    },
+    {
+      "stem": "最适合用隔离法的是求什么？",
+      "options": [
+        "A. 系统加速度",
+        "B. 物体间相互作用力",
+        "C. 整体合外力",
+        "D. 系统运动"
+      ],
+      "correct": 1,
+      "explanation": "隔离法求内力，整体法求加速度。",
+      "encouragement": "求内力用隔离法！",
+      "tags": "隔离法应用"
+    },
+    {
+      "stem": "A、B叠放推A求B受摩擦力，第一步？",
+      "options": [
+        "A. 直接隔离B",
+        "B. 先整体求a再隔离B",
+        "C. 直接隔离A",
+        "D. 分析B"
+      ],
+      "correct": 1,
+      "explanation": "先整体求出共同加速度，再隔离B列方程。",
+      "encouragement": "叠放问题先整体。",
+      "tags": "叠放问题"
+    },
+    {
+      "stem": "连接体加速度相同时最方便的方法？",
+      "options": [
+        "A. 分别隔离",
+        "B. 先整体求加速度",
+        "C. 能量法",
+        "D. 动量法"
+      ],
+      "correct": 1,
+      "explanation": "加速度相同→先整体求a，再隔离求内力。",
+      "encouragement": "先整体再隔离。",
+      "tags": "连接体方法"
+    },
+    {
+      "stem": "m₁m₂绳连受F，绳中张力T=？",
+      "options": [
+        "A. F",
+        "B. m₂F/(m₁+m₂)",
+        "C. m₁F/(m₁+m₂)",
+        "D. F/2"
+      ],
+      "correct": 1,
+      "explanation": "整体a=F/(m₁+m₂)，隔离m₂：T=m₂a=m₂F/(m₁+m₂)。",
+      "encouragement": "记住这个公式！",
+      "tags": "连接体张力"
+    }
+  ],
+  "nd2": [
+    {
+      "stem": "物体向右滑时滑动摩擦力方向？",
+      "options": [
+        "A. 向右",
+        "B. 向左",
+        "C. 竖直向上",
+        "D. 无法确定"
+      ],
+      "correct": 1,
+      "explanation": "滑动摩擦力与相对运动方向相反。",
+      "encouragement": "方向问题很多同学都搞反过。",
+      "tags": "摩擦力方向"
+    },
+    {
+      "stem": "斜面静止物体受几个力？",
+      "options": [
+        "A. 2个",
+        "B. 3个",
+        "C. 4个",
+        "D. 都不对"
+      ],
+      "correct": 1,
+      "explanation": "重力、支持力、静摩擦力3个。没有下滑力。",
+      "encouragement": "没有下滑力这个力！",
+      "tags": "受力分析"
+    },
+    {
+      "stem": "匀速上升电梯中物体受力？",
+      "options": [
+        "A. 重力>支持力",
+        "B. 支持力>重力",
+        "C. 重力和支持力平衡",
+        "D. 不受支持力"
+      ],
+      "correct": 2,
+      "explanation": "匀速→合力为零→重力和支持力平衡。",
+      "encouragement": "匀速就是平衡。",
+      "tags": "平衡状态"
+    },
+    {
+      "stem": "轻绳拉力方向特点？",
+      "options": [
+        "A. 沿绳指向收缩",
+        "B. 沿绳背离物体",
+        "C. 垂直接触面",
+        "D. 竖直向上"
+      ],
+      "correct": 0,
+      "explanation": "轻绳拉力一定沿绳指向绳收缩的方向。",
+      "encouragement": "绳子方向有规律。",
+      "tags": "绳的拉力"
+    },
+    {
+      "stem": "作用力和反作用力的性质？",
+      "options": [
+        "A. 等大反向同体",
+        "B. 等大反向异体",
+        "C. 大小不等",
+        "D. 不同时产生"
+      ],
+      "correct": 1,
+      "explanation": "等大、反向、共线、异体。关键在异体。",
+      "encouragement": "和平衡力混淆是常事。",
+      "tags": "牛顿第三定律"
+    },
+    {
+      "stem": "受拉力F未拉动，摩擦力大小？",
+      "options": [
+        "A. μmg",
+        "B. 等于F",
+        "C. 0",
+        "D. 大于F"
+      ],
+      "correct": 1,
+      "explanation": "静止→静摩擦力与拉力平衡。",
+      "encouragement": "静摩擦力被动适应。",
+      "tags": "静摩擦力"
+    },
+    {
+      "stem": "轻杆弹力一定沿杆吗？",
+      "options": [
+        "A. 一定",
+        "B. 不一定",
+        "C. 一定不",
+        "D. 只沿拉伸时"
+      ],
+      "correct": 1,
+      "explanation": "杆的弹力不一定沿杆！绳才一定沿绳。",
+      "encouragement": "绳有方向杆无定向！",
+      "tags": "轻杆弹力"
+    },
+    {
+      "stem": "受力分析时哪个力不应画？",
+      "options": [
+        "A. 重力",
+        "B. 支持力",
+        "C. 合力",
+        "D. 摩擦力"
+      ],
+      "correct": 2,
+      "explanation": "受力分析只画实际受到的力，合力是效果力。",
+      "encouragement": "不画合力！",
+      "tags": "受力分析原则"
+    }
+  ],
+  "nd3": [
+    {
+      "stem": "正交分解坐标轴怎么建最方便？",
+      "options": [
+        "A. 水平竖直",
+        "B. 斜面垂直斜面",
+        "C. 沿a方向和垂直a方向",
+        "D. 任意"
+      ],
+      "correct": 2,
+      "explanation": "沿a方向建坐标列Fx=ma，垂直方向Fy=0。",
+      "encouragement": "沿a方向建最省力。",
+      "tags": "正交分解"
+    },
+    {
+      "stem": "垂直加速度方向的合力？",
+      "options": [
+        "A. 为0",
+        "B. 为ma",
+        "C. 最大",
+        "D. 不确定"
+      ],
+      "correct": 0,
+      "explanation": "垂直方向无运动分量，Fy=0。",
+      "encouragement": "Fy=0是铁律。",
+      "tags": "正交分解原则"
+    },
+    {
+      "stem": "斜向上拉力F加速，水平分力？",
+      "options": [
+        "A. F",
+        "B. Fsinθ",
+        "C. Fcosθ",
+        "D. 0"
+      ],
+      "correct": 2,
+      "explanation": "水平分力=Fcosθ，竖直分力=Fsinθ。",
+      "encouragement": "找准邻边和对边。",
+      "tags": "力的分解"
+    },
+    {
+      "stem": "斜面加速下滑，沿斜面方向方程？",
+      "options": [
+        "A. mg=ma",
+        "B. mgsinθ=ma",
+        "C. mgsinθ-f=ma",
+        "D. N-mgcosθ=ma"
+      ],
+      "correct": 2,
+      "explanation": "下滑力mgsinθ减摩擦力f等于ma。",
+      "encouragement": "这是斜面核心方程！",
+      "tags": "斜面加速度"
+    },
+    {
+      "stem": "加速度方向未知怎么建坐标系？",
+      "options": [
+        "A. 随便",
+        "B. 假设a方向",
+        "C. 不建",
+        "D. 等知道"
+      ],
+      "correct": 1,
+      "explanation": "假设a方向建，解出正则方向正确。",
+      "encouragement": "假设法很重要。",
+      "tags": "坐标系假设"
+    },
+    {
+      "stem": "三力平衡需几个方程？",
+      "options": [
+        "A. 1个",
+        "B. 2个",
+        "C. 3个",
+        "D. 4个"
+      ],
+      "correct": 1,
+      "explanation": "Fx=0和Fy=0，两个方程。",
+      "encouragement": "两个方向两个方程。",
+      "tags": "正交分解方程"
+    },
+    {
+      "stem": "坐标轴必须互相垂直？",
+      "options": [
+        "A. 必须",
+        "B. 垂直最方便",
+        "C. 不能",
+        "D. 无所谓"
+      ],
+      "correct": 1,
+      "explanation": "正交分解要求垂直，不垂直也能解但更复杂。",
+      "encouragement": "正交=垂直。",
+      "tags": "正交坐标系"
+    },
+    {
+      "stem": "斜面静止沿斜面方向平衡方程？",
+      "options": [
+        "A. mg=0",
+        "B. mgsinθ-f=0",
+        "C. N-mg=0",
+        "D. F=ma"
+      ],
+      "correct": 1,
+      "explanation": "mgsinθ与静摩擦力f平衡。",
+      "encouragement": "斜面平衡基本方程。",
+      "tags": "斜面平衡"
+    }
+  ],
+  "nd4": [
+    {
+      "stem": "F合=ma中F合指什么？",
+      "options": [
+        "A. 任意力",
+        "B. 所有外力矢量和",
+        "C. 支持力",
+        "D. 重力"
+      ],
+      "correct": 1,
+      "explanation": "F合是所有外力的矢量和。",
+      "encouragement": "合力不是某一个力！",
+      "tags": "合力理解"
+    },
+    {
+      "stem": "2kg物体受6N，加速度？",
+      "options": [
+        "A. 12m/s²",
+        "B. 3m/s²",
+        "C. 8m/s²",
+        "D. 4m/s²"
+      ],
+      "correct": 1,
+      "explanation": "a=F/m=6/2=3m/s²。",
+      "encouragement": "基本功扎实！",
+      "tags": "F=ma计算"
+    },
+    {
+      "stem": "正方向影响什么？",
+      "options": [
+        "A. a大小",
+        "B. 正负号",
+        "C. 力大小",
+        "D. 质量"
+      ],
+      "correct": 1,
+      "explanation": "正方向只影响正负号，不影响大小。",
+      "encouragement": "正方向定正负。",
+      "tags": "正方向"
+    },
+    {
+      "stem": "摩擦力f减速，a的方程？",
+      "options": [
+        "A. f=ma",
+        "B. -f=ma",
+        "C. f+mg=ma",
+        "D. f=-ma"
+      ],
+      "correct": 1,
+      "explanation": "摩擦力与运动反向为负，-f=ma。",
+      "encouragement": "符号错了全题皆错。",
+      "tags": "方程符号"
+    },
+    {
+      "stem": "已知受力求运动，求a后？",
+      "options": [
+        "A. 直接得速度",
+        "B. 用运动学公式",
+        "C. 重新受力",
+        "D. 换对象"
+      ],
+      "correct": 1,
+      "explanation": "求a后用运动学公式求速度位移。",
+      "encouragement": "a之后是运动学。",
+      "tags": "动力学步骤"
+    },
+    {
+      "stem": "光滑斜面物体加速度？",
+      "options": [
+        "A. g",
+        "B. gsinθ",
+        "C. gcosθ",
+        "D. gtanθ"
+      ],
+      "correct": 1,
+      "explanation": "a=mgsinθ/m=gsinθ。",
+      "encouragement": "gsinθ常考！",
+      "tags": "斜面加速度"
+    },
+    {
+      "stem": "列车加速θ角，a=？",
+      "options": [
+        "A. gtanθ",
+        "B. gsinθ",
+        "C. gcosθ",
+        "D. g/tanθ"
+      ],
+      "correct": 0,
+      "explanation": "tanθ=ma/mg，a=gtanθ。加速度计原理。",
+      "encouragement": "加速度计原题！",
+      "tags": "加速度计"
+    },
+    {
+      "stem": "ma是不是力？",
+      "options": [
+        "A. 是",
+        "B. 不是是效果",
+        "C. 等于重力",
+        "D. 不确定"
+      ],
+      "correct": 1,
+      "explanation": "ma不是力，是力的效果。F=ma=力产生加速度。",
+      "encouragement": "ma不是力！",
+      "tags": "力的本质"
+    }
+  ],
+  "nd5": [
+    {
+      "stem": "加速度为负说明？",
+      "options": [
+        "A. 计算错",
+        "B. 方向与正方向相反",
+        "C. 静止",
+        "D. 题目错"
+      ],
+      "correct": 1,
+      "explanation": "负值只表示方向与正方向相反。",
+      "encouragement": "负号表示方向。",
+      "tags": "结果检验"
+    },
+    {
+      "stem": "a=10m/s²合理吗？",
+      "options": [
+        "A. 不合理",
+        "B. 合理≈g",
+        "C. 只在真空",
+        "D. 不可能"
+      ],
+      "correct": 1,
+      "explanation": "10m/s²≈g，自由落体时合理。",
+      "encouragement": "常见值要有感觉。",
+      "tags": "量纲判断"
+    },
+    {
+      "stem": "忘摩擦力至a偏大，为什么？",
+      "options": [
+        "A. 方向反",
+        "B. 应从合力中减",
+        "C. 不影响",
+        "D. 方向变"
+      ],
+      "correct": 1,
+      "explanation": "摩擦力应从合力中减去，忘了则合力偏大。",
+      "encouragement": "检查受力图！",
+      "tags": "摩擦力遗漏"
+    },
+    {
+      "stem": "时间t为负值原因？",
+      "options": [
+        "A. 时间可负",
+        "B. 正方向设错",
+        "C. a算大",
+        "D. m算错"
+      ],
+      "correct": 1,
+      "explanation": "时间不能为负，检查正方向设定。",
+      "encouragement": "负时间查方向。",
+      "tags": "时间负值"
+    },
+    {
+      "stem": "力的国际单位？",
+      "options": [
+        "A. kg",
+        "B. m/s",
+        "C. N",
+        "D. m/s²"
+      ],
+      "correct": 2,
+      "explanation": "力的单位是N(牛顿)，1N=1kg·m/s²。",
+      "encouragement": "量纲查错最快！",
+      "tags": "力的单位"
+    },
+    {
+      "stem": "两未知数一方程说明？",
+      "options": [
+        "A. 题错",
+        "B. 需再找一对象列式",
+        "C. 放弃",
+        "D. 猜"
+      ],
+      "correct": 1,
+      "explanation": "换一个对象再列一个方程。",
+      "encouragement": "方程不够换对象！",
+      "tags": "多未知数"
+    },
+    {
+      "stem": "怎么验证结果正确？",
+      "options": [
+        "A. 再算一遍",
+        "B. 用F=ma验证",
+        "C. 看符号",
+        "D. 看大小"
+      ],
+      "correct": 1,
+      "explanation": "代入F=ma看是否成立。",
+      "encouragement": "代入验证最直接！",
+      "tags": "结果验证"
+    },
+    {
+      "stem": "整体法a可用于隔离体？",
+      "options": [
+        "A. 整体隔离a相同",
+        "B. 总是相等",
+        "C. 质量相同",
+        "D. 力相同"
+      ],
+      "correct": 0,
+      "explanation": "连接体各物体加速度相同。",
+      "encouragement": "a相同是关键！",
+      "tags": "加速度相同"
+    }
+  ],
+  "dc1": [
+    {
+      "stem": "动量守恒步骤1(判系统)的核心要点？",
+      "options": [
+        "A. 判系统",
+        "B. 看外力",
+        "C. 定初末",
+        "D. 列矢量式"
+      ],
+      "correct": 0,
+      "explanation": "动量守恒第1步是判系统。",
+      "encouragement": "步骤要记清！",
+      "tags": "动量守恒"
+    },
+    {
+      "stem": "动量守恒的条件？",
+      "options": [
+        "A. 合外力不为零",
+        "B. 合外力为零或内力>>外力",
+        "C. 只要有力",
+        "D. 与速度无关"
+      ],
+      "correct": 1,
+      "explanation": "合外力为零时守恒；内力>>外力时近似守恒。",
+      "encouragement": "条件=合外力为零！",
+      "tags": "动量守恒条件"
+    }
+  ],
+  "dc2": [
+    {
+      "stem": "动量守恒步骤2(看外力)的核心要点？",
+      "options": [
+        "A. 判系统",
+        "B. 看外力",
+        "C. 定初末",
+        "D. 列矢量式"
+      ],
+      "correct": 1,
+      "explanation": "动量守恒第2步是看外力。",
+      "encouragement": "步骤要记清！",
+      "tags": "动量守恒"
+    },
+    {
+      "stem": "动量守恒的条件？",
+      "options": [
+        "A. 合外力不为零",
+        "B. 合外力为零或内力>>外力",
+        "C. 只要有力",
+        "D. 与速度无关"
+      ],
+      "correct": 1,
+      "explanation": "合外力为零时守恒；内力>>外力时近似守恒。",
+      "encouragement": "条件=合外力为零！",
+      "tags": "动量守恒条件"
+    }
+  ],
+  "dc3": [
+    {
+      "stem": "动量守恒步骤3(定初末)的核心要点？",
+      "options": [
+        "A. 判系统",
+        "B. 看外力",
+        "C. 定初末",
+        "D. 列矢量式"
+      ],
+      "correct": 2,
+      "explanation": "动量守恒第3步是定初末。",
+      "encouragement": "步骤要记清！",
+      "tags": "动量守恒"
+    },
+    {
+      "stem": "动量守恒的条件？",
+      "options": [
+        "A. 合外力不为零",
+        "B. 合外力为零或内力>>外力",
+        "C. 只要有力",
+        "D. 与速度无关"
+      ],
+      "correct": 1,
+      "explanation": "合外力为零时守恒；内力>>外力时近似守恒。",
+      "encouragement": "条件=合外力为零！",
+      "tags": "动量守恒条件"
+    }
+  ],
+  "dc4": [
+    {
+      "stem": "动量守恒步骤4(列矢量式)的核心要点？",
+      "options": [
+        "A. 判系统",
+        "B. 看外力",
+        "C. 定初末",
+        "D. 列矢量式"
+      ],
+      "correct": 3,
+      "explanation": "动量守恒第4步是列矢量式。",
+      "encouragement": "步骤要记清！",
+      "tags": "动量守恒"
+    },
+    {
+      "stem": "动量守恒的条件？",
+      "options": [
+        "A. 合外力不为零",
+        "B. 合外力为零或内力>>外力",
+        "C. 只要有力",
+        "D. 与速度无关"
+      ],
+      "correct": 1,
+      "explanation": "合外力为零时守恒；内力>>外力时近似守恒。",
+      "encouragement": "条件=合外力为零！",
+      "tags": "动量守恒条件"
+    }
+  ],
+  "dn1": [
+    {
+      "stem": "动能定理表达式？",
+      "options": [
+        "A. F=ma",
+        "B. W合=ΔEk",
+        "C. p=mv",
+        "D. mgh=½mv²"
+      ],
+      "correct": 1,
+      "explanation": "W合=Ek末-Ek初。",
+      "encouragement": "W合=ΔEk！",
+      "tags": "动能定理"
+    },
+    {
+      "stem": "速度减半动能变多少？",
+      "options": [
+        "A. 1/2",
+        "B. 1/4",
+        "C. 1/8",
+        "D. 不变"
+      ],
+      "correct": 1,
+      "explanation": "Ek=½mv²，v减半v²变1/4。",
+      "encouragement": "平方关系要牢记！",
+      "tags": "动能与速度"
+    }
+  ],
+  "dn2": [
+    {
+      "stem": "动能定理表达式？",
+      "options": [
+        "A. F=ma",
+        "B. W合=ΔEk",
+        "C. p=mv",
+        "D. mgh=½mv²"
+      ],
+      "correct": 1,
+      "explanation": "W合=Ek末-Ek初。",
+      "encouragement": "W合=ΔEk！",
+      "tags": "动能定理"
+    },
+    {
+      "stem": "速度减半动能变多少？",
+      "options": [
+        "A. 1/2",
+        "B. 1/4",
+        "C. 1/8",
+        "D. 不变"
+      ],
+      "correct": 1,
+      "explanation": "Ek=½mv²，v减半v²变1/4。",
+      "encouragement": "平方关系要牢记！",
+      "tags": "动能与速度"
+    }
+  ],
+  "dn3": [
+    {
+      "stem": "动能定理表达式？",
+      "options": [
+        "A. F=ma",
+        "B. W合=ΔEk",
+        "C. p=mv",
+        "D. mgh=½mv²"
+      ],
+      "correct": 1,
+      "explanation": "W合=Ek末-Ek初。",
+      "encouragement": "W合=ΔEk！",
+      "tags": "动能定理"
+    },
+    {
+      "stem": "速度减半动能变多少？",
+      "options": [
+        "A. 1/2",
+        "B. 1/4",
+        "C. 1/8",
+        "D. 不变"
+      ],
+      "correct": 1,
+      "explanation": "Ek=½mv²，v减半v²变1/4。",
+      "encouragement": "平方关系要牢记！",
+      "tags": "动能与速度"
+    }
+  ],
+  "dn4": [
+    {
+      "stem": "动能定理表达式？",
+      "options": [
+        "A. F=ma",
+        "B. W合=ΔEk",
+        "C. p=mv",
+        "D. mgh=½mv²"
+      ],
+      "correct": 1,
+      "explanation": "W合=Ek末-Ek初。",
+      "encouragement": "W合=ΔEk！",
+      "tags": "动能定理"
+    },
+    {
+      "stem": "速度减半动能变多少？",
+      "options": [
+        "A. 1/2",
+        "B. 1/4",
+        "C. 1/8",
+        "D. 不变"
+      ],
+      "correct": 1,
+      "explanation": "Ek=½mv²，v减半v²变1/4。",
+      "encouragement": "平方关系要牢记！",
+      "tags": "动能与速度"
+    }
+  ],
+  "wy1": [
+    {
+      "stem": "F=GMm/r²中r指？",
+      "options": [
+        "A. 表面距",
+        "B. 质心距",
+        "C. 地球半径",
+        "D. 轨道高度"
+      ],
+      "correct": 1,
+      "explanation": "r是两物体质心间的距离。",
+      "encouragement": "r是质心距！",
+      "tags": "万有引力"
+    },
+    {
+      "stem": "卫星半径越大线速度？",
+      "options": [
+        "A. 越大",
+        "B. 越小",
+        "C. 不变",
+        "D. 先大后小"
+      ],
+      "correct": 1,
+      "explanation": "v=√(GM/r)，r越大v越小。高轨低速。",
+      "encouragement": "高轨低速常考！",
+      "tags": "卫星规律"
+    }
+  ],
+  "wy2": [
+    {
+      "stem": "F=GMm/r²中r指？",
+      "options": [
+        "A. 表面距",
+        "B. 质心距",
+        "C. 地球半径",
+        "D. 轨道高度"
+      ],
+      "correct": 1,
+      "explanation": "r是两物体质心间的距离。",
+      "encouragement": "r是质心距！",
+      "tags": "万有引力"
+    },
+    {
+      "stem": "卫星半径越大线速度？",
+      "options": [
+        "A. 越大",
+        "B. 越小",
+        "C. 不变",
+        "D. 先大后小"
+      ],
+      "correct": 1,
+      "explanation": "v=√(GM/r)，r越大v越小。高轨低速。",
+      "encouragement": "高轨低速常考！",
+      "tags": "卫星规律"
+    }
+  ],
+  "wy3": [
+    {
+      "stem": "F=GMm/r²中r指？",
+      "options": [
+        "A. 表面距",
+        "B. 质心距",
+        "C. 地球半径",
+        "D. 轨道高度"
+      ],
+      "correct": 1,
+      "explanation": "r是两物体质心间的距离。",
+      "encouragement": "r是质心距！",
+      "tags": "万有引力"
+    },
+    {
+      "stem": "卫星半径越大线速度？",
+      "options": [
+        "A. 越大",
+        "B. 越小",
+        "C. 不变",
+        "D. 先大后小"
+      ],
+      "correct": 1,
+      "explanation": "v=√(GM/r)，r越大v越小。高轨低速。",
+      "encouragement": "高轨低速常考！",
+      "tags": "卫星规律"
+    }
+  ],
+  "wy4": [
+    {
+      "stem": "F=GMm/r²中r指？",
+      "options": [
+        "A. 表面距",
+        "B. 质心距",
+        "C. 地球半径",
+        "D. 轨道高度"
+      ],
+      "correct": 1,
+      "explanation": "r是两物体质心间的距离。",
+      "encouragement": "r是质心距！",
+      "tags": "万有引力"
+    },
+    {
+      "stem": "卫星半径越大线速度？",
+      "options": [
+        "A. 越大",
+        "B. 越小",
+        "C. 不变",
+        "D. 先大后小"
+      ],
+      "correct": 1,
+      "explanation": "v=√(GM/r)，r越大v越小。高轨低速。",
+      "encouragement": "高轨低速常考！",
+      "tags": "卫星规律"
+    }
+  ],
+  "jc1": [
+    {
+      "stem": "电场线疏密表示？",
+      "options": [
+        "A. 电势",
+        "B. 电场强弱",
+        "C. 电荷",
+        "D. 力方向"
+      ],
+      "correct": 1,
+      "explanation": "电场线越密电场越强。",
+      "encouragement": "疏密=强弱。",
+      "tags": "电场线"
+    },
+    {
+      "stem": "正电荷受力方向？",
+      "options": [
+        "A. 与电场线反向",
+        "B. 与电场线同向",
+        "C. 垂直",
+        "D. 不确定"
+      ],
+      "correct": 1,
+      "explanation": "正电荷受力与电场方向相同。",
+      "encouragement": "正电荷顺电场线！",
+      "tags": "电场力方向"
+    }
+  ],
+  "jc2": [
+    {
+      "stem": "电场线疏密表示？",
+      "options": [
+        "A. 电势",
+        "B. 电场强弱",
+        "C. 电荷",
+        "D. 力方向"
+      ],
+      "correct": 1,
+      "explanation": "电场线越密电场越强。",
+      "encouragement": "疏密=强弱。",
+      "tags": "电场线"
+    },
+    {
+      "stem": "正电荷受力方向？",
+      "options": [
+        "A. 与电场线反向",
+        "B. 与电场线同向",
+        "C. 垂直",
+        "D. 不确定"
+      ],
+      "correct": 1,
+      "explanation": "正电荷受力与电场方向相同。",
+      "encouragement": "正电荷顺电场线！",
+      "tags": "电场力方向"
+    }
+  ],
+  "jc3": [
+    {
+      "stem": "电场线疏密表示？",
+      "options": [
+        "A. 电势",
+        "B. 电场强弱",
+        "C. 电荷",
+        "D. 力方向"
+      ],
+      "correct": 1,
+      "explanation": "电场线越密电场越强。",
+      "encouragement": "疏密=强弱。",
+      "tags": "电场线"
+    },
+    {
+      "stem": "正电荷受力方向？",
+      "options": [
+        "A. 与电场线反向",
+        "B. 与电场线同向",
+        "C. 垂直",
+        "D. 不确定"
+      ],
+      "correct": 1,
+      "explanation": "正电荷受力与电场方向相同。",
+      "encouragement": "正电荷顺电场线！",
+      "tags": "电场力方向"
+    }
+  ],
+  "jc4": [
+    {
+      "stem": "电场线疏密表示？",
+      "options": [
+        "A. 电势",
+        "B. 电场强弱",
+        "C. 电荷",
+        "D. 力方向"
+      ],
+      "correct": 1,
+      "explanation": "电场线越密电场越强。",
+      "encouragement": "疏密=强弱。",
+      "tags": "电场线"
+    },
+    {
+      "stem": "正电荷受力方向？",
+      "options": [
+        "A. 与电场线反向",
+        "B. 与电场线同向",
+        "C. 垂直",
+        "D. 不确定"
+      ],
+      "correct": 1,
+      "explanation": "正电荷受力与电场方向相同。",
+      "encouragement": "正电荷顺电场线！",
+      "tags": "电场力方向"
+    }
+  ],
+  "dg1": [
+    {
+      "stem": "感应电动势产生条件？",
+      "options": [
+        "A. 有磁场",
+        "B. 磁通量变化",
+        "C. 有导体",
+        "D. 有电流"
+      ],
+      "correct": 1,
+      "explanation": "磁通量变化产生感应电动势。",
+      "encouragement": "磁通量变化是根因！",
+      "tags": "电磁感应"
+    },
+    {
+      "stem": "楞次定律内容？",
+      "options": [
+        "A. 磁通量大感应强",
+        "B. 感应电流阻碍引起它的原因",
+        "C. 同向",
+        "D. 与电阻无关"
+      ],
+      "correct": 1,
+      "explanation": "增反减同、来拒去留。",
+      "encouragement": "增反减同！",
+      "tags": "楞次定律"
+    }
+  ],
+  "dg2": [
+    {
+      "stem": "感应电动势产生条件？",
+      "options": [
+        "A. 有磁场",
+        "B. 磁通量变化",
+        "C. 有导体",
+        "D. 有电流"
+      ],
+      "correct": 1,
+      "explanation": "磁通量变化产生感应电动势。",
+      "encouragement": "磁通量变化是根因！",
+      "tags": "电磁感应"
+    },
+    {
+      "stem": "楞次定律内容？",
+      "options": [
+        "A. 磁通量大感应强",
+        "B. 感应电流阻碍引起它的原因",
+        "C. 同向",
+        "D. 与电阻无关"
+      ],
+      "correct": 1,
+      "explanation": "增反减同、来拒去留。",
+      "encouragement": "增反减同！",
+      "tags": "楞次定律"
+    }
+  ],
+  "dg3": [
+    {
+      "stem": "感应电动势产生条件？",
+      "options": [
+        "A. 有磁场",
+        "B. 磁通量变化",
+        "C. 有导体",
+        "D. 有电流"
+      ],
+      "correct": 1,
+      "explanation": "磁通量变化产生感应电动势。",
+      "encouragement": "磁通量变化是根因！",
+      "tags": "电磁感应"
+    },
+    {
+      "stem": "楞次定律内容？",
+      "options": [
+        "A. 磁通量大感应强",
+        "B. 感应电流阻碍引起它的原因",
+        "C. 同向",
+        "D. 与电阻无关"
+      ],
+      "correct": 1,
+      "explanation": "增反减同、来拒去留。",
+      "encouragement": "增反减同！",
+      "tags": "楞次定律"
+    }
+  ],
+  "dg4": [
+    {
+      "stem": "感应电动势产生条件？",
+      "options": [
+        "A. 有磁场",
+        "B. 磁通量变化",
+        "C. 有导体",
+        "D. 有电流"
+      ],
+      "correct": 1,
+      "explanation": "磁通量变化产生感应电动势。",
+      "encouragement": "磁通量变化是根因！",
+      "tags": "电磁感应"
+    },
+    {
+      "stem": "楞次定律内容？",
+      "options": [
+        "A. 磁通量大感应强",
+        "B. 感应电流阻碍引起它的原因",
+        "C. 同向",
+        "D. 与电阻无关"
+      ],
+      "correct": 1,
+      "explanation": "增反减同、来拒去留。",
+      "encouragement": "增反减同！",
+      "tags": "楞次定律"
+    }
+  ],
+  "jl1": [
+    {
+      "stem": "交流电步骤1(看转轴)要点？",
+      "options": [
+        "A. 看转轴",
+        "B. 定峰值",
+        "C. 写瞬时值",
+        "D. 算有效值"
+      ],
+      "correct": 0,
+      "explanation": "第1步是看转轴。",
+      "encouragement": "步骤顺序要记牢！",
+      "tags": "交流电"
+    },
+    {
+      "stem": "有效值与峰值关系？",
+      "options": [
+        "A. 相等",
+        "B. U=Um/√2",
+        "C. Um=U/√2",
+        "D. U=2Um"
+      ],
+      "correct": 1,
+      "explanation": "正弦交流电有效值=峰值/√2。",
+      "encouragement": "U=Um/√2常考！",
+      "tags": "有效值"
+    }
+  ],
+  "jl2": [
+    {
+      "stem": "交流电步骤2(定峰值)要点？",
+      "options": [
+        "A. 看转轴",
+        "B. 定峰值",
+        "C. 写瞬时值",
+        "D. 算有效值"
+      ],
+      "correct": 1,
+      "explanation": "第2步是定峰值。",
+      "encouragement": "步骤顺序要记牢！",
+      "tags": "交流电"
+    },
+    {
+      "stem": "有效值与峰值关系？",
+      "options": [
+        "A. 相等",
+        "B. U=Um/√2",
+        "C. Um=U/√2",
+        "D. U=2Um"
+      ],
+      "correct": 1,
+      "explanation": "正弦交流电有效值=峰值/√2。",
+      "encouragement": "U=Um/√2常考！",
+      "tags": "有效值"
+    }
+  ],
+  "jl3": [
+    {
+      "stem": "交流电步骤3(写瞬时值)要点？",
+      "options": [
+        "A. 看转轴",
+        "B. 定峰值",
+        "C. 写瞬时值",
+        "D. 算有效值"
+      ],
+      "correct": 2,
+      "explanation": "第3步是写瞬时值。",
+      "encouragement": "步骤顺序要记牢！",
+      "tags": "交流电"
+    },
+    {
+      "stem": "有效值与峰值关系？",
+      "options": [
+        "A. 相等",
+        "B. U=Um/√2",
+        "C. Um=U/√2",
+        "D. U=2Um"
+      ],
+      "correct": 1,
+      "explanation": "正弦交流电有效值=峰值/√2。",
+      "encouragement": "U=Um/√2常考！",
+      "tags": "有效值"
+    }
+  ],
+  "jl4": [
+    {
+      "stem": "交流电步骤4(算有效值)要点？",
+      "options": [
+        "A. 看转轴",
+        "B. 定峰值",
+        "C. 写瞬时值",
+        "D. 算有效值"
+      ],
+      "correct": 3,
+      "explanation": "第4步是算有效值。",
+      "encouragement": "步骤顺序要记牢！",
+      "tags": "交流电"
+    },
+    {
+      "stem": "有效值与峰值关系？",
+      "options": [
+        "A. 相等",
+        "B. U=Um/√2",
+        "C. Um=U/√2",
+        "D. U=2Um"
+      ],
+      "correct": 1,
+      "explanation": "正弦交流电有效值=峰值/√2。",
+      "encouragement": "U=Um/√2常考！",
+      "tags": "有效值"
+    }
+  ],
+  "qt1": [
+    {
+      "stem": "气体方程中温度单位？",
+      "options": [
+        "A. 摄氏",
+        "B. 开尔文(K)",
+        "C. 华氏",
+        "D. 都可以"
+      ],
+      "correct": 1,
+      "explanation": "温度必须用开尔文T(K)。",
+      "encouragement": "必须用开尔文！",
+      "tags": "气体温度"
+    },
+    {
+      "stem": "等温变化用哪个定律？",
+      "options": [
+        "A. 玻意耳",
+        "B. 查理",
+        "C. 盖-吕萨克",
+        "D. 都行"
+      ],
+      "correct": 0,
+      "explanation": "等温用玻意耳定律p₁V₁=p₂V₂。",
+      "encouragement": "等温玻意耳！",
+      "tags": "气体定律"
+    }
+  ],
+  "qt2": [
+    {
+      "stem": "气体方程中温度单位？",
+      "options": [
+        "A. 摄氏",
+        "B. 开尔文(K)",
+        "C. 华氏",
+        "D. 都可以"
+      ],
+      "correct": 1,
+      "explanation": "温度必须用开尔文T(K)。",
+      "encouragement": "必须用开尔文！",
+      "tags": "气体温度"
+    },
+    {
+      "stem": "等温变化用哪个定律？",
+      "options": [
+        "A. 玻意耳",
+        "B. 查理",
+        "C. 盖-吕萨克",
+        "D. 都行"
+      ],
+      "correct": 0,
+      "explanation": "等温用玻意耳定律p₁V₁=p₂V₂。",
+      "encouragement": "等温玻意耳！",
+      "tags": "气体定律"
+    }
+  ],
+  "qt3": [
+    {
+      "stem": "气体方程中温度单位？",
+      "options": [
+        "A. 摄氏",
+        "B. 开尔文(K)",
+        "C. 华氏",
+        "D. 都可以"
+      ],
+      "correct": 1,
+      "explanation": "温度必须用开尔文T(K)。",
+      "encouragement": "必须用开尔文！",
+      "tags": "气体温度"
+    },
+    {
+      "stem": "等温变化用哪个定律？",
+      "options": [
+        "A. 玻意耳",
+        "B. 查理",
+        "C. 盖-吕萨克",
+        "D. 都行"
+      ],
+      "correct": 0,
+      "explanation": "等温用玻意耳定律p₁V₁=p₂V₂。",
+      "encouragement": "等温玻意耳！",
+      "tags": "气体定律"
+    }
+  ],
+  "qt4": [
+    {
+      "stem": "气体方程中温度单位？",
+      "options": [
+        "A. 摄氏",
+        "B. 开尔文(K)",
+        "C. 华氏",
+        "D. 都可以"
+      ],
+      "correct": 1,
+      "explanation": "温度必须用开尔文T(K)。",
+      "encouragement": "必须用开尔文！",
+      "tags": "气体温度"
+    },
+    {
+      "stem": "等温变化用哪个定律？",
+      "options": [
+        "A. 玻意耳",
+        "B. 查理",
+        "C. 盖-吕萨克",
+        "D. 都行"
+      ],
+      "correct": 0,
+      "explanation": "等温用玻意耳定律p₁V₁=p₂V₂。",
+      "encouragement": "等温玻意耳！",
+      "tags": "气体定律"
+    }
+  ],
+  "nd_e1": [
+    {
+      "stem": "能量法第1步(定初末态)要点？",
+      "options": [
+        "A. 定初末态",
+        "B. 算总功",
+        "C. 定动能变化",
+        "D. 列方程"
+      ],
+      "correct": 0,
+      "explanation": "第1步是定初末态。",
+      "encouragement": "能量法步骤要记清！",
+      "tags": "能量法"
+    },
+    {
+      "stem": "初末态核心是什么？",
+      "options": [
+        "A. 力和时间",
+        "B. 速度和高度",
+        "C. 质量和加速度",
+        "D. 时间和位移"
+      ],
+      "correct": 1,
+      "explanation": "初末态核心是速度和高度（动能和势能）。",
+      "encouragement": "速度和高度是关键！",
+      "tags": "初末态"
+    }
+  ],
+  "nd_e2": [
+    {
+      "stem": "能量法第2步(算总功)要点？",
+      "options": [
+        "A. 定初末态",
+        "B. 算总功",
+        "C. 定动能变化",
+        "D. 列方程"
+      ],
+      "correct": 1,
+      "explanation": "第2步是算总功。",
+      "encouragement": "能量法步骤要记清！",
+      "tags": "能量法"
+    },
+    {
+      "stem": "初末态核心是什么？",
+      "options": [
+        "A. 力和时间",
+        "B. 速度和高度",
+        "C. 质量和加速度",
+        "D. 时间和位移"
+      ],
+      "correct": 1,
+      "explanation": "初末态核心是速度和高度（动能和势能）。",
+      "encouragement": "速度和高度是关键！",
+      "tags": "初末态"
+    }
+  ],
+  "nd_e3": [
+    {
+      "stem": "能量法第3步(定动能变化)要点？",
+      "options": [
+        "A. 定初末态",
+        "B. 算总功",
+        "C. 定动能变化",
+        "D. 列方程"
+      ],
+      "correct": 2,
+      "explanation": "第3步是定动能变化。",
+      "encouragement": "能量法步骤要记清！",
+      "tags": "能量法"
+    },
+    {
+      "stem": "初末态核心是什么？",
+      "options": [
+        "A. 力和时间",
+        "B. 速度和高度",
+        "C. 质量和加速度",
+        "D. 时间和位移"
+      ],
+      "correct": 1,
+      "explanation": "初末态核心是速度和高度（动能和势能）。",
+      "encouragement": "速度和高度是关键！",
+      "tags": "初末态"
+    }
+  ],
+  "nd_e4": [
+    {
+      "stem": "能量法第4步(列方程)要点？",
+      "options": [
+        "A. 定初末态",
+        "B. 算总功",
+        "C. 定动能变化",
+        "D. 列方程"
+      ],
+      "correct": 3,
+      "explanation": "第4步是列方程。",
+      "encouragement": "能量法步骤要记清！",
+      "tags": "能量法"
+    },
+    {
+      "stem": "初末态核心是什么？",
+      "options": [
+        "A. 力和时间",
+        "B. 速度和高度",
+        "C. 质量和加速度",
+        "D. 时间和位移"
+      ],
+      "correct": 1,
+      "explanation": "初末态核心是速度和高度（动能和势能）。",
+      "encouragement": "速度和高度是关键！",
+      "tags": "初末态"
+    }
+  ],
+  "dg_e1": [
+    {
+      "stem": "能量法第1步要点？",
+      "options": [
+        "A. 定能量来源",
+        "B. 列能量转化式",
+        "C. 算焦耳热",
+        "D. 检查守恒"
+      ],
+      "correct": 0,
+      "explanation": "第1步正确。",
+      "encouragement": "记住步骤顺序！",
+      "tags": "电磁感应能量"
+    },
+    {
+      "stem": "电磁感应中焦耳热怎么求？",
+      "options": [
+        "A. U²/R",
+        "B. I²Rt",
+        "C. Fs",
+        "D. mgh"
+      ],
+      "correct": 1,
+      "explanation": "焦耳热Q=I²Rt，或由能量转化关系求。",
+      "encouragement": "Q=I²Rt！",
+      "tags": "焦耳热"
+    }
+  ],
+  "dg_e2": [
+    {
+      "stem": "能量法第2步要点？",
+      "options": [
+        "A. 定能量来源",
+        "B. 列能量转化式",
+        "C. 算焦耳热",
+        "D. 检查守恒"
+      ],
+      "correct": 1,
+      "explanation": "第2步正确。",
+      "encouragement": "记住步骤顺序！",
+      "tags": "电磁感应能量"
+    },
+    {
+      "stem": "电磁感应中焦耳热怎么求？",
+      "options": [
+        "A. U²/R",
+        "B. I²Rt",
+        "C. Fs",
+        "D. mgh"
+      ],
+      "correct": 1,
+      "explanation": "焦耳热Q=I²Rt，或由能量转化关系求。",
+      "encouragement": "Q=I²Rt！",
+      "tags": "焦耳热"
+    }
+  ],
+  "dg_e3": [
+    {
+      "stem": "能量法第3步要点？",
+      "options": [
+        "A. 定能量来源",
+        "B. 列能量转化式",
+        "C. 算焦耳热",
+        "D. 检查守恒"
+      ],
+      "correct": 2,
+      "explanation": "第3步正确。",
+      "encouragement": "记住步骤顺序！",
+      "tags": "电磁感应能量"
+    },
+    {
+      "stem": "电磁感应中焦耳热怎么求？",
+      "options": [
+        "A. U²/R",
+        "B. I²Rt",
+        "C. Fs",
+        "D. mgh"
+      ],
+      "correct": 1,
+      "explanation": "焦耳热Q=I²Rt，或由能量转化关系求。",
+      "encouragement": "Q=I²Rt！",
+      "tags": "焦耳热"
+    }
+  ],
+  "dg_e4": [
+    {
+      "stem": "能量法第4步要点？",
+      "options": [
+        "A. 定能量来源",
+        "B. 列能量转化式",
+        "C. 算焦耳热",
+        "D. 检查守恒"
+      ],
+      "correct": 3,
+      "explanation": "第4步正确。",
+      "encouragement": "记住步骤顺序！",
+      "tags": "电磁感应能量"
+    },
+    {
+      "stem": "电磁感应中焦耳热怎么求？",
+      "options": [
+        "A. U²/R",
+        "B. I²Rt",
+        "C. Fs",
+        "D. mgh"
+      ],
+      "correct": 1,
+      "explanation": "焦耳热Q=I²Rt，或由能量转化关系求。",
+      "encouragement": "Q=I²Rt！",
+      "tags": "焦耳热"
+    }
+  ]
+};
+
+// ==================== 练习题逻辑模块 ====================
+var QUIZ_STATE = {};
+function startQuiz(stepId) {
+  var qs = QUESTIONS[stepId];
+  if(!qs || qs.length === 0) { alert('暂无题库'); return; }
+  QUIZ_STATE.stepId = stepId;
+  QUIZ_STATE.questions = qs;
+  QUIZ_STATE.used = [];
+  QUIZ_STATE.index = 0;
+  QUIZ_STATE.correct = 0;
+  QUIZ_STATE.total = 0;
+  QUIZ_STATE.results = [];
+  // 随机选3道
+  QUIZ_STATE.batch = shufflePick(qs, 3);
+  QUIZ_STATE.used = QUIZ_STATE.used.concat(QUIZ_STATE.batch);
+  showQuestion(0);
+}
+function shufflePick(arr, n) {
+  var copy = arr.slice();
+  var result = [];
+  for(var i=0;i<n && copy.length>0;i++) {
+    var idx = Math.floor(Math.random() * copy.length);
+    result.push(copy.splice(idx,1)[0]);
+  }
+  return result;
+}
+function showQuestion(idx) {
+  QUIZ_STATE.index = idx;
+  var q = QUIZ_STATE.batch[idx];
+  var html = '<div class="quiz-overlay"><div class="quiz-box"><div class="quiz-counter">第'+(idx+1)+'/'+QUIZ_STATE.batch.length+'题</div>';
+  html += '<div class="quiz-stem">'+q.stem+'</div><div class="quiz-options">';
+  for(var i=0;i<q.options.length;i++) {
+    html += '<div class="quiz-option" onclick="submitQuizAnswer('+i+')">'+q.options[i]+'</div>';
+  }
+  html += '</div></div></div>';
+  var el = document.getElementById('quizContainer');
+  if(el) el.innerHTML = html;
+}
+function submitQuizAnswer(selected) {
+  var q = QUIZ_STATE.batch[QUIZ_STATE.index];
+  var isCorrect = (selected === q.correct);
+  QUIZ_STATE.total++;
+  if(isCorrect) QUIZ_STATE.correct++;
+  QUIZ_STATE.results.push({q:q, selected:selected, correct:isCorrect});
+  var html = '<div class="quiz-overlay"><div class="quiz-box">';
+  if(isCorrect) {
+    html += '<div class="quiz-result quiz-correct">&#10004; 回答正确！</div>';
+  } else {
+    html += '<div class="quiz-result quiz-wrong">&#10008; 回答错误</div>';
+    html += '<div class="quiz-answer">正确答案：'+q.options[q.correct]+'</div>';
+  }
+  html += '<div class="quiz-explain">'+q.explanation+'</div>';
+  html += '<div class="quiz-encourage">&#128170; '+q.encouragement+'</div>';
+  if(QUIZ_STATE.index+1 < QUIZ_STATE.batch.length) {
+    html += '<button class="quiz-btn" onclick="showQuestion('+(QUIZ_STATE.index+1)+')">下一题</button>';
+  } else {
+    html += '<div class="quiz-result-title">你答对了 '+QUIZ_STATE.correct+'/'+QUIZ_STATE.total+' 题</div>';
+    var remaining = QUIZ_STATE.questions.length - QUIZ_STATE.used.length;
+    if(remaining > 0) {
+      html += '<button class="quiz-btn" onclick="continueQuiz()">继续练习</button>';
+    }
+    html += '<button class="quiz-btn quiz-btn-exit" onclick="closeQuiz()">退出练习</button>';
+    if(remaining === 0) {
+      html += '<div class="quiz-done">&#127881; 你已挑战完本步骤所有卡点！你的物理直觉正在变得锋利。</div>';
+    }
+  }
+  html += '</div></div>';
+  var el = document.getElementById('quizContainer');
+  if(el) el.innerHTML = html;
+}
+function continueQuiz() {
+  var remaining = QUIZ_STATE.questions.slice();
+  for(var i=0;i<QUIZ_STATE.used.length;i++) {
+    var idx = remaining.indexOf(QUIZ_STATE.used[i]);
+    if(idx >= 0) remaining.splice(idx,1);
+  }
+  QUIZ_STATE.batch = shufflePick(remaining, Math.min(3, remaining.length));
+  QUIZ_STATE.used = QUIZ_STATE.used.concat(QUIZ_STATE.batch);
+  showQuestion(0);
+}
+function closeQuiz() {
+  var el = document.getElementById('quizContainer');
+  if(el) el.innerHTML = '';
+}
+// 修改 renderLogicTree 在步骤卡片后添加"来测三道"按钮
+function addQuizButtons() {
+  var cards = document.querySelectorAll('.step-card');
+  for(var i=0;i<cards.length;i++) {
+    if(cards[i].querySelector('.quiz-btn-start')) continue;
+    var sid = cards[i].getAttribute('data-step');
+    if(sid && QUESTIONS[sid]) {
+      var btn = document.createElement('button');
+      btn.className = 'quiz-btn-start';
+      btn.innerHTML = '&#128221; 来测三道这个步骤的核心卡点';
+      btn.onclick = function(id) { return function(){ startQuiz(id); }; }(sid);
+      cards[i].appendChild(btn);
+    }
+  }
+}
+var _origRLT2 = renderLogicTree;
+renderLogicTree = function() { _origRLT2(); setTimeout(addQuizButtons, 200); };
+
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
