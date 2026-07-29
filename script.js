@@ -2595,8 +2595,10 @@ function enterFocusMode(goal) {
   document.body.style.transition = "background-color 0.5s";
   document.getElementById("studyArea").style.display = "block";
   document.getElementById("focusArea").style.display = "block";
+  document.getElementById("noiseControl").style.display = "block";
   document.getElementById("quoteArea").style.display = "none";
   document.getElementById("summaryArea").style.display = "none";
+  document.getElementById("noiseControl").style.display = "none";
   var goalEl = document.getElementById("studyGoal");
   if(goalEl && STUDY_GOAL) { goalEl.textContent = "🎯 " + STUDY_GOAL; goalEl.style.display = "block"; }
   else if(goalEl) { goalEl.style.display = "none"; }
@@ -2623,6 +2625,8 @@ function enterQuoteMode() {
   document.getElementById("focusArea").style.display = "none";
   document.getElementById("summaryArea").style.display = "none";
   document.getElementById("quoteArea").style.display = "flex";
+  document.getElementById("studyOverlay").style.display = "flex";
+  document.getElementById("noiseControl").style.display = "block";
   var roomBtn = document.getElementById("studyRoomBtn");
   if(roomBtn) roomBtn.style.display = "none";
   // 显示名言轮播
@@ -2665,6 +2669,8 @@ function enterSummaryMode(goal) {
   document.getElementById("focusArea").style.display = "none";
   document.getElementById("quoteArea").style.display = "none";
   document.getElementById("summaryArea").style.display = "block";
+  document.getElementById("studyOverlay").style.display = "flex";
+  document.getElementById("noiseControl").style.display = "block";
   var roomBtn = document.getElementById("studyRoomBtn");
   if(roomBtn) roomBtn.style.display = "none";
   // 生成知识点总结
@@ -2765,10 +2771,9 @@ function exitStudyRoom() {
 
 function updateStudyTimer() {
   if(!STUDY_START) return;
-  var el = document.getElementById("studyTimer");
-  if(!el) return;
   var min = Math.floor((Date.now() - STUDY_START) / 60000);
-  el.textContent = "\u23F3 已专注 " + min + " 分钟";
+  var timers = document.querySelectorAll(".study-timer");
+  for(var i=0;i<timers.length;i++) timers[i].textContent = "\u23F3 已专注 " + min + " 分钟";
 }
 
 var AUDIO_ELEMENTS = {};
