@@ -2530,36 +2530,36 @@ var STUDY_MODE_TYPE = 0;
 // 显示模式选择器
 function showStudyModeSelector(goal) {
   var hasGoal = goal && goal.trim().length > 0;
-  var html = "<div class="mode-select-overlay"><div class="mode-select-box">";
-  html += "<div class="mode-select-title">选择自习模式</div>";
-  // 模式1: 专注模式
-  html += "<div class="mode-card" onclick="enterFocusMode('" + goal.replace(/'/g,"\'") + "')">";
-  html += "<div class="mode-icon">🎯</div><div class="mode-name">专注模式</div>";
-  html += "<div class="mode-desc">保留逻辑树，全神贯注解题</div></div>";
-  // 模式2: 凝思模式
-  html += "<div class="mode-card" onclick="enterQuoteMode()">";
-  html += "<div class="mode-icon">⏳</div><div class="mode-name">凝思模式</div>";
-  html += "<div class="mode-desc">时间沙漏与物理格言相伴</div></div>";
-  // 模式3: 梳理模式（仅在有目标时显示）
+  var el = document.getElementById("modeSelector");
+  if(!el) return;
+  var html = "<div class=\"mode-select-overlay\"><div class=\"mode-select-box\">";
+  html += "<div class=\"mode-select-title\">选择自习模式</div>";
+  html += "<div class=\"mode-card\" data-mode=\"focus\">";
+  html += "<div class=\"mode-icon\">🎯</div><div class=\"mode-name\">专注模式</div>";
+  html += "<div class=\"mode-desc\">保留逻辑树，全神贯注解题</div></div>";
+  html += "<div class=\"mode-card\" data-mode=\"quote\">";
+  html += "<div class=\"mode-icon\">⏳</div><div class=\"mode-name\">凝思模式</div>";
+  html += "<div class=\"mode-desc\">时间沙漏与物理格言相伴</div></div>";
   if(hasGoal) {
-    html += "<div class="mode-card" onclick="enterSummaryMode('" + goal.replace(/'/g,"\'") + "')">";
-    html += "<div class="mode-icon">📋</div><div class="mode-name">梳理模式</div>";
-    html += "<div class="mode-desc">知识点分条列项系统回顾</div></div>";
+    html += "<div class=\"mode-card\" data-mode=\"summary\">";
+    html += "<div class=\"mode-icon\">📋</div><div class=\"mode-name\">梳理模式</div>";
+    html += "<div class=\"mode-desc\">知识点分条列项系统回顾</div></div>";
   }
   html += "</div></div>";
-  var el = document.getElementById("modeSelector");
-  if(el) { el.innerHTML = html; el.style.display = "block"; }
+  el.innerHTML = html;
+  el.style.display = "block";
+  var cards = el.querySelectorAll(".mode-card");
+  for(var i=0;i<cards.length;i++) {
+    (function(card) {
+      card.onclick = function() {
+        var mode = card.getAttribute("data-mode");
+        if(mode === "focus") enterFocusMode(goal);
+        else if(mode === "quote") enterQuoteMode();
+        else if(mode === "summary") enterSummaryMode(goal);
+      };
+    })(cards[i]);
+  }
 }
-
-function hideModeSelector() {
-  var el = document.getElementById("modeSelector");
-  if(el) el.style.display = "none";
-}
-
-function enterStudyRoom() {
-  STUDY_MODE = true;
-  STUDY_START = Date.now();
-  var goal = prompt("写下你今天想攻克的一个物理卡点（一句话）：", "");
   STUDY_GOAL = (goal && goal.trim()) ? goal.trim() : "";
   showStudyModeSelector(STUDY_GOAL);
 }
