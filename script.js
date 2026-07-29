@@ -2789,9 +2789,8 @@ function updateStudyTimer() {
   var tm = now.getMinutes();
   var ts = (th<10?'0':'')+th+':'+(tm<10?'0':'')+tm;
   var timers = document.querySelectorAll('.study-timer');
-  for(var i=0;i<timers.length;i++) timers[i].textContent = '\u23F3 ' + ts + ' \u00B7 \u5DF2\u4E13\u6CE8 ' + min + ' \u5206\u949F';
+  for(var j=0;j<timers.length;j++) timers[j].textContent = "\u23F3 " + ts + " \u00B7 \u5DF2\u4E13\u6CE8 " + min + " \u5206\u949F";
 }
-  var src = "";
   if(type === "gravity") { src = "audio/gravity.mp3"; STUDY_NOISE = "gravity"; }
   else if(type === "star") { src = "audio/star.mp3"; STUDY_NOISE = "star"; }
   else if(type === "silence") { src = "audio/silence.mp3"; STUDY_NOISE = "silence"; }
