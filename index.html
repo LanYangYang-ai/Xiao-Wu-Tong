@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>高中物理 · 逻辑脉络图</title>
 <link rel="stylesheet" href="style.css?v=3">
+<style>@keyframes hourglass { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(180deg)} }</style>
 </head>
 <body>
 <div id="physicsWeather" style="text-align:center;padding:6px 16px;font-size:13px;color:#7f8c8d;font-style:italic;letter-spacing:1px;"></div>
@@ -220,7 +221,7 @@ var KNOWLEDGE_TREE = {branches:[
 
 <!-- 凝思模式（时间沙漏+名言） -->
 <div id="quoteArea" style="display:none;">
-  <div class="study-timer" style="font-size:72px;color:#e8d5b7;font-weight:300;position:relative;margin-bottom:40px;"></div>
+  <div id="hourglassDisplay" style="text-align:center;margin-bottom:20px;"><div style="font-size:80px;color:#e8d5b7;animation:hourglass 3s ease-in-out infinite;display:inline-block;">&#9203;</div></div><div class="study-timer" style="font-size:64px;color:#f0e6d3;font-weight:300;font-family:Georgia,serif;text-align:center;letter-spacing:4px;"></div><div style="font-size:16px;color:#a8a8c0;margin-top:16px;font-style:italic;" id="quoteTimeSub">时间在流淌，物理在歌唱</div>
   <div id="quoteText" style="font-size:22px;color:#a8a8c0;font-style:italic;max-width:600px;text-align:center;line-height:1.8;padding:0 24px;"></div>
   <div style="margin-top:40px;"><span style="font-size:13px;color:#666;cursor:pointer;border:1px solid #555;padding:8px 20px;border-radius:20px;" onclick="exitStudyRoom()">退出自习室</span></div>
 </div>
