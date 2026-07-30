@@ -2685,68 +2685,106 @@ function generateSummary(goal) {
   var el = document.getElementById("summaryContent");
   if(!el) return;
   var input = goal.toLowerCase();
-  var html = '';
-  // 标题
+  var html = "";
   html += '<div style="text-align:center;padding:28px 16px 8px;">';
   html += '<div style="font-size:24px;margin-bottom:4px;">\u{1F4D6}</div>';
   html += '<div style="font-size:18px;font-weight:600;color:#2c3e50;">\u57FA\u4E8E\u4F60\u7684\u76EE\u6807\uFF0C\u4E3A\u4F60\u68B3\u7406\u4EE5\u4E0B\u77E5\u8BC6\u70B9</div>';
-  html += '<div style="font-size:13px;color:#95a5a6;margin-top:6px;">' + goal + '</div></div>';
+  html += '<div style="font-size:13px;color:#95a5a6;margin-top:6px;">\u2714 \u8F93\u5165\u4EFB\u610F\u7269\u7406\u5173\u952E\u8BCD\u5373\u53EF\u5339\u914D</div></div>';
+  
   var found = false;
-  var moduleNames = LOGIC_TREES ? Object.keys(LOGIC_TREES) : [];
-  for(var m=0; m<moduleNames.length; m++) {
-    var modName = moduleNames[m];
-    if(!LOGIC_TREES[modName]) continue;
-    var mod = LOGIC_TREES[modName];
-    var modMatch = input.indexOf(modName.toLowerCase()) >= 0;
-    var stepMatch = false;
-    var matchedIds = {};
-    var allSteps = (mod.steps || []).concat(mod.dualSteps || []);
-    for(var si=0; si<allSteps.length; si++) {
-      var st = allSteps[si];
-      if(!st || !st.name) continue;
-      var shortName = st.name.replace(/^\d+\s*[\u4e00-\u9fa5]+\s*/, "").toLowerCase();
-      if(input.indexOf(shortName) >= 0) { stepMatch = true; matchedIds[si] = true; }
-      if(st.desc && input.indexOf(st.desc.substring(0,6).toLowerCase()) >= 0) { stepMatch = true; matchedIds[si] = true; }
-    }
-    if(modMatch || stepMatch) {
-      found = true;
-      html += '<div class="summary-module">';
-      html += '<div class="summary-module-title" style="font-size:17px;font-weight:600;color:#27ae60;margin-bottom:4px;">';
-      html += (modMatch ? "\u{1F539} " : "\u{1F538} ") + modName + "</div>";
-      html += '<div class="summary-intro" style="font-size:13px;color:#7f8c8d;margin-bottom:12px;font-style:italic;">' + (mod.intro || '\u638C\u63E1\u8FD9\u4E9B\u6B65\u9AA4\uFF0C\u89E3\u51B3\u6B64\u7C7B\u95EE\u9898') + '</div>';
-      var displaySteps = [];
-      if(stepMatch) { for(var si=0; si<allSteps.length; si++) { if(matchedIds[si]) displaySteps.push(allSteps[si]); } }
-      if(displaySteps.length === 0) displaySteps = allSteps;
-      if(displaySteps.length > 5) displaySteps = displaySteps.slice(0,5);
-      html += '<div class="summary-steps">';
-      for(var si=0; si<displaySteps.length; si++) {
-        var st = displaySteps[si]; if(!st) continue;
-        var hl = matchedIds[si] ? "background:#e8f8f0;border-radius:8px;" : "";
-        html += "<div class=\"summary-step\" style=\"" + hl + "padding:10px 0;border-bottom:1px solid #f0f0f0;\">";
-        html += "<div class=\"summary-step-name\" style=\"font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:2px;\">" + st.name + "</div>";
-        html += "<div class=\"summary-step-desc\" style=\"font-size:13px;color:#555;line-height:1.6;\">" + st.desc + "</div>";
-        if(st.tip) html += "<div class=\"summary-step-tip\" style=\"font-size:12px;color:#e67e22;margin-top:4px;padding:5px 10px;background:#fef9e7;border-radius:6px;\">\u26A0 " + st.tip + "</div>";
-        html += '</div>';
+  
+  // 1. 搜索 KNOWLEDGE_DATA (优先)
+  if(typeof KNOWLEDGE_DATA !== "undefined" && KNOWLEDGE_DATA.length > 0) {
+    var matched = [];
+    for(var i=0;i<KNOWLEDGE_DATA.length;i++) {
+      var item = KNOWLEDGE_DATA[i];
+      if(!item) continue;
+      // 匹配name
+      if(item.name && item.name.toLowerCase().indexOf(input) >= 0) { matched.push(item); continue; }
+      // 匹配tags
+      if(item.tags && item.tags.length > 0) {
+        for(var t=0;t<item.tags.length;t++) {
+          if(item.tags[t].toLowerCase().indexOf(input) >= 0) { matched.push(item); break; }
+        }
       }
-      html += '</div></div>';
+    }
+    
+    if(matched.length > 0) {
+      found = true;
+      // 去重
+      var seen = {}; var unique = [];
+      for(var i=0;i<matched.length;i++) {
+        if(!seen[matched[i].id]) { seen[matched[i].id] = true; unique.push(matched[i]); }
+      }
+      // 按领域分组显示
+      var fields = {};
+      for(var i=0;i<unique.length;i++) {
+        var f = unique[i].field || "\u5176\u4ED6";
+        if(!fields[f]) fields[f] = [];
+        fields[f].push(unique[i]);
+      }
+      
+      for(var f in fields) {
+        html += '<div class="kd-section">';
+        html += '<div class="kd-field">" + f + "</div><div class="kd-cards">';
+        for(var i=0;i<fields[f].length;i++) {
+          var k = fields[f][i];
+          html += '<div class="kd-card">';
+          html += '<div class="kd-name">" + k.name + "</div>';
+          html += '<div class="kd-meta">';
+          var typeLabel = k.type || "";
+          var levelLabel = k.level || "";
+          if(typeLabel) html += '<span class="kd-tag kd-tag-type">' + typeLabel + '</span>';
+          if(levelLabel) html += '<span class="kd-tag kd-tag-level">' + levelLabel + '</span>';
+          if(levelLabel) html += '<span class="kd-tag kd-tag-level">' + levelLabel + '</span>';
+          if(k.oneLiner) html += '<div class="kd-desc">' + k.oneLiner + '</div>';
+          html += "</div>";
+        }
+        html += "</div></div>";
+      }
     }
   }
+  
+  // 2. 搜索 LOGIC_TREES (备选,与原有逻辑相同但不重复显示)
+  if(!found && typeof LOGIC_TREES !== "undefined") {
+    var moduleNames = Object.keys(LOGIC_TREES);
+    for(var m=0; m<moduleNames.length; m++) {
+      var modName = moduleNames[m];
+      if(input.indexOf(modName.toLowerCase()) >= 0) {
+        found = true;
+        var mod = LOGIC_TREES[modName];
+        var steps = mod.steps || [];
+        html += '<div class="summary-module">';
+        html += '<div class="summary-module-title" style="font-size:17px;font-weight:600;color:#27ae60;margin-bottom:4px;">\u{1F539} " + modName + "</div>';
+        html += '<div class="summary-intro" style="font-size:13px;color:#7f8c8d;margin-bottom:12px;font-style:italic;">" + (mod.intro || "") + "</div>';
+        html += '<div class="summary-steps">';
+        for(var s=0; s<steps.length; s++) {
+          var st = steps[s]; if(!st) continue;
+          html += '<div class="summary-step" style="padding:10px 0;border-bottom:1px solid #f0f0f0;">';
+          html += '<div class="summary-step-name" style="font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:2px;">" + st.name + "</div>';
+          html += '<div class="summary-step-desc" style="font-size:13px;color:#555;line-height:1.6;">" + st.desc + "</div>';
+          if(st.tip) html += '<div class="summary-step-tip" style="font-size:12px;color:#e67e22;margin-top:4px;padding:5px 10px;background:#fef9e7;border-radius:6px;">\u{26A0} " + st.tip + "</div>';
+          html += "</div>";
+        }
+        html += "</div></div>";
+      }
+    }
+  }
+  
+  // 3. 无匹配
   if(!found) {
-    html += '<div style="text-align:center;padding:20px;color:#7f8c8d;">';
+    html += '<div style="text-align:center;padding:40px;">';
     html += '<div style="font-size:40px;margin-bottom:12px;">\u{1F4AD}</div>';
-    html += '<div style="font-size:16px;line-height:1.8;">\u6CA1\u6709\u627E\u5230\u5B8C\u5168\u5339\u914D\u7684\u77E5\u8BC6\u70B9\u3002</div>';
-    html += '<div style="font-size:14px;color:#95a5a6;margin-top:8px;">\u8BD5\u8BD5\u9009\u62E9\u4EE5\u4E0B\u6A21\u5757\u8FDB\u884C\u68B3\u7406\uFF1A</div></div>';
-    html += '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:12px 16px;">';
-    for(var m=0; m<Math.min(moduleNames.length, 8); m++) {
-      html += '<span style="padding:6px 14px;background:#e8f8f0;color:#27ae60;border-radius:20px;font-size:13px;cursor:pointer;" onclick="exitStudyRoom()">' + moduleNames[m] + '</span>';
-    }
-    html += '</div>';
+    html += '<div style="font-size:16px;color:#7f8c8d;line-height:1.8;">\u6CA1\u6709\u627E\u5230\u5339\u914D\u7684\u77E5\u8BC6\u70B9</div>';
+    html += '<div style="font-size:14px;color:#95a5a6;margin-top:8px;">\u8BD5\u8BD5\u8F93\u5165\u66F4\u5177\u4F53\u7684\u7269\u7406\u672F\u8BED\uFF0C\u5982\u201C\u725B\u987F\u7B2C\u4E8C\u5B9A\u5F8B\u201D\u201C\u53D7\u529B\u5206\u6790\u201D</div></div>';
   }
+  
+  // 退出按钮
   html += '<div style="text-align:center;padding:24px 0 40px;">';
   html += '<button onclick="exitStudyRoom()" style="padding:10px 36px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">\u{1F6AA} \u9000\u51FA\u81EA\u4E60\u5BA4</button></div>';
+  
   el.innerHTML = html;
-}
-function exitStudyRoom() {
+}function exitStudyRoom() {
   if(!STUDY_MODE) return;
   STUDY_MODE = false;
   var elapsed = Math.floor((Date.now() - STUDY_START) / 60000);
@@ -2836,9 +2874,2100 @@ function loadStudyStats() {
   setInterval(updatePhysicsWeather, 60000);
   setTimeout(loadStudyStats, 500);
 })();
+var KNOWLEDGE_DATA = [
+  {
+    "id": "k001",
+    "name": "质点",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "质点",
+      "理想模型"
+    ],
+    "oneLiner": "有质量的理想化点"
+  },
+  {
+    "id": "k002",
+    "name": "参考系",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "参考系",
+      "参照物"
+    ],
+    "oneLiner": "描述运动选作标准的物体"
+  },
+  {
+    "id": "k003",
+    "name": "坐标系",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "坐标系",
+      "坐标轴"
+    ],
+    "oneLiner": "定量描述位置的系统"
+  },
+  {
+    "id": "k004",
+    "name": "位移",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "位移",
+      "位置变化"
+    ],
+    "oneLiner": "初到末位置的有向线段"
+  },
+  {
+    "id": "k005",
+    "name": "路程",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "路程",
+      "路径"
+    ],
+    "oneLiner": "轨迹的实际长度"
+  },
+  {
+    "id": "k006",
+    "name": "速度",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "速度",
+      "速率"
+    ],
+    "oneLiner": "位移与时间的比值"
+  },
+  {
+    "id": "k007",
+    "name": "加速度",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "加速度",
+      "a=Δv/Δt"
+    ],
+    "oneLiner": "速度变化的快慢"
+  },
+  {
+    "id": "k008",
+    "name": "速度变化量",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "Δv",
+      "速度差"
+    ],
+    "oneLiner": "末速度减初速度"
+  },
+  {
+    "id": "k009",
+    "name": "匀变速速度公式",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "v=v₀+at"
+    ],
+    "oneLiner": "速度与时间关系"
+  },
+  {
+    "id": "k010",
+    "name": "匀变速位移公式",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "x=v₀t+½at²"
+    ],
+    "oneLiner": "位移与时间关系"
+  },
+  {
+    "id": "k011",
+    "name": "速度位移公式",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "v²-v₀²=2ax"
+    ],
+    "oneLiner": "不含时的匀变速公式"
+  },
+  {
+    "id": "k012",
+    "name": "自由落体",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "自由落体",
+      "g"
+    ],
+    "oneLiner": "初速为零只受重力"
+  },
+  {
+    "id": "k013",
+    "name": "竖直上抛",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "竖直上抛"
+    ],
+    "oneLiner": "向上减速至最高点自由下落"
+  },
+  {
+    "id": "k014",
+    "name": "追及相遇",
+    "field": "力学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "追及",
+      "相遇",
+      "临界"
+    ],
+    "oneLiner": "两物体同向运动相遇分析"
+  },
+  {
+    "id": "k015",
+    "name": "比例法",
+    "field": "力学",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "比例法",
+      "逆向"
+    ],
+    "oneLiner": "利用比例简化计算"
+  },
+  {
+    "id": "k016",
+    "name": "牛顿第一定律",
+    "field": "力学",
+    "type": "定律",
+    "level": "基础",
+    "tags": [
+      "惯性定律"
+    ],
+    "oneLiner": "物体保持原有运动状态"
+  },
+  {
+    "id": "k017",
+    "name": "牛顿第二定律",
+    "field": "力学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "F=ma",
+      "牛二"
+    ],
+    "oneLiner": "加速度与合力成正比与质量成反比"
+  },
+  {
+    "id": "k018",
+    "name": "瞬时性",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "瞬时性",
+      "突变"
+    ],
+    "oneLiner": "力突变时加速度随之突变"
+  },
+  {
+    "id": "k019",
+    "name": "矢量性",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "矢量性",
+      "同向"
+    ],
+    "oneLiner": "加速度方向与合力方向相同"
+  },
+  {
+    "id": "k020",
+    "name": "牛顿第三定律",
+    "field": "力学",
+    "type": "定律",
+    "level": "基础",
+    "tags": [
+      "作用力",
+      "反作用力"
+    ],
+    "oneLiner": "等大反向共线异体"
+  },
+  {
+    "id": "k021",
+    "name": "超重",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "超重",
+      "FN>G"
+    ],
+    "oneLiner": "支持力大于重力"
+  },
+  {
+    "id": "k022",
+    "name": "失重",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "失重",
+      "FN<G"
+    ],
+    "oneLiner": "支持力小于重力"
+  },
+  {
+    "id": "k023",
+    "name": "整体法",
+    "field": "力学",
+    "type": "方法",
+    "level": "核心",
+    "tags": [
+      "整体法",
+      "系统"
+    ],
+    "oneLiner": "多物体视为整体分析外力"
+  },
+  {
+    "id": "k024",
+    "name": "隔离法",
+    "field": "力学",
+    "type": "方法",
+    "level": "核心",
+    "tags": [
+      "隔离法",
+      "单独"
+    ],
+    "oneLiner": "单独分析某物体受力"
+  },
+  {
+    "id": "k025",
+    "name": "连接体",
+    "field": "力学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "连接体",
+      "绳连"
+    ],
+    "oneLiner": "多物体连接共同运动"
+  },
+  {
+    "id": "k026",
+    "name": "传送带",
+    "field": "力学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "传送带"
+    ],
+    "oneLiner": "物体在传送带上运动"
+  },
+  {
+    "id": "k027",
+    "name": "滑块木板",
+    "field": "力学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "滑块",
+      "木板",
+      "叠放"
+    ],
+    "oneLiner": "叠放相对运动分析"
+  },
+  {
+    "id": "k028",
+    "name": "临界极值",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "临界",
+      "极值"
+    ],
+    "oneLiner": "恰好变化的边界状态"
+  },
+  {
+    "id": "k029",
+    "name": "重力",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "重力",
+      "G=mg"
+    ],
+    "oneLiner": "地球对物体的引力"
+  },
+  {
+    "id": "k030",
+    "name": "重心",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "重心",
+      "质心"
+    ],
+    "oneLiner": "重力的等效作用点"
+  },
+  {
+    "id": "k031",
+    "name": "弹力",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "弹力",
+      "形变"
+    ],
+    "oneLiner": "弹性形变产生的恢复力"
+  },
+  {
+    "id": "k032",
+    "name": "胡克定律",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "F=kx",
+      "弹簧"
+    ],
+    "oneLiner": "弹力与形变量成正比"
+  },
+  {
+    "id": "k033",
+    "name": "静摩擦力",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "静摩擦力",
+      "f静"
+    ],
+    "oneLiner": "有相对运动趋势时的摩擦力"
+  },
+  {
+    "id": "k034",
+    "name": "滑动摩擦力",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "f=μN"
+    ],
+    "oneLiner": "滑动摩擦力与正压力成正比"
+  },
+  {
+    "id": "k035",
+    "name": "平行四边形定则",
+    "field": "力学",
+    "type": "方法",
+    "level": "核心",
+    "tags": [
+      "平行四边形",
+      "合成"
+    ],
+    "oneLiner": "矢量合成的基本法则"
+  },
+  {
+    "id": "k036",
+    "name": "正交分解",
+    "field": "力学",
+    "type": "方法",
+    "level": "核心",
+    "tags": [
+      "正交分解"
+    ],
+    "oneLiner": "沿垂直坐标轴分解力"
+  },
+  {
+    "id": "k037",
+    "name": "共点力平衡",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "F合=0",
+      "平衡"
+    ],
+    "oneLiner": "合力为零时平衡"
+  },
+  {
+    "id": "k038",
+    "name": "动态平衡",
+    "field": "力学",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "动态平衡",
+      "图解法"
+    ],
+    "oneLiner": "平衡态缓慢变化分析"
+  },
+  {
+    "id": "k039",
+    "name": "动量",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "p=mv",
+      "动量"
+    ],
+    "oneLiner": "质量与速度的乘积"
+  },
+  {
+    "id": "k040",
+    "name": "冲量",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "I=Ft",
+      "冲量"
+    ],
+    "oneLiner": "力对时间的积累"
+  },
+  {
+    "id": "k041",
+    "name": "动量定理",
+    "field": "力学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "Ft=Δp"
+    ],
+    "oneLiner": "合外力的冲量等于动量变化"
+  },
+  {
+    "id": "k042",
+    "name": "动量守恒",
+    "field": "力学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "动量守恒",
+      "m1v1+m2v2"
+    ],
+    "oneLiner": "系统不受外力时总动量守恒"
+  },
+  {
+    "id": "k043",
+    "name": "弹性碰撞",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "弹性碰撞"
+    ],
+    "oneLiner": "碰撞前后动能守恒"
+  },
+  {
+    "id": "k044",
+    "name": "非弹性碰撞",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "非弹性碰撞"
+    ],
+    "oneLiner": "碰撞后动能减少"
+  },
+  {
+    "id": "k045",
+    "name": "完全非弹性碰撞",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "完全非弹性",
+      "共速"
+    ],
+    "oneLiner": "碰后粘在一起,动能损失最大"
+  },
+  {
+    "id": "k046",
+    "name": "人船模型",
+    "field": "力学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "人船",
+      "后退"
+    ],
+    "oneLiner": "人在船上走船后退"
+  },
+  {
+    "id": "k047",
+    "name": "子弹木块",
+    "field": "力学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "子弹",
+      "木块"
+    ],
+    "oneLiner": "子弹射入木块动量守恒"
+  },
+  {
+    "id": "k048",
+    "name": "功",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "W=FScosθ"
+    ],
+    "oneLiner": "力与位移的乘积"
+  },
+  {
+    "id": "k049",
+    "name": "功率",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "P=Fv"
+    ],
+    "oneLiner": "做功的快慢"
+  },
+  {
+    "id": "k050",
+    "name": "动能",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "Ek=½mv²"
+    ],
+    "oneLiner": "运动所具有的能量"
+  },
+  {
+    "id": "k051",
+    "name": "重力势能",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "Ep=mgh"
+    ],
+    "oneLiner": "被举高所具有的能量"
+  },
+  {
+    "id": "k052",
+    "name": "弹性势能",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "Ep=½kx²"
+    ],
+    "oneLiner": "弹簧形变具有的能量"
+  },
+  {
+    "id": "k053",
+    "name": "动能定理",
+    "field": "力学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "W合=ΔEk"
+    ],
+    "oneLiner": "合外力做功等于动能变化"
+  },
+  {
+    "id": "k054",
+    "name": "机械能守恒",
+    "field": "力学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "Ek1+Ep1=Ek2+Ep2"
+    ],
+    "oneLiner": "只有重力弹力做功时机械能不变"
+  },
+  {
+    "id": "k055",
+    "name": "功能关系",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "功能关系"
+    ],
+    "oneLiner": "做功伴随能量转化"
+  },
+  {
+    "id": "k056",
+    "name": "能量守恒",
+    "field": "力学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "能量守恒"
+    ],
+    "oneLiner": "能量不会凭空产生消失"
+  },
+  {
+    "id": "k057",
+    "name": "曲线运动条件",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "曲线运动",
+      "合力与速度不共线"
+    ],
+    "oneLiner": "合力方向与速度方向不在同一直线"
+  },
+  {
+    "id": "k058",
+    "name": "运动合成与分解",
+    "field": "力学",
+    "type": "方法",
+    "level": "核心",
+    "tags": [
+      "合成",
+      "分解"
+    ],
+    "oneLiner": "复杂运动拆分为简单运动"
+  },
+  {
+    "id": "k059",
+    "name": "渡河问题",
+    "field": "力学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "渡河",
+      "最短"
+    ],
+    "oneLiner": "小船过河最优化分析"
+  },
+  {
+    "id": "k060",
+    "name": "关联速度",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "关联速度",
+      "绳杆"
+    ],
+    "oneLiner": "沿绳方向速度相等"
+  },
+  {
+    "id": "k061",
+    "name": "平抛运动",
+    "field": "力学",
+    "type": "模型",
+    "level": "核心",
+    "tags": [
+      "平抛"
+    ],
+    "oneLiner": "水平匀速竖直自由落体"
+  },
+  {
+    "id": "k062",
+    "name": "斜抛运动",
+    "field": "力学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "斜抛",
+      "射程"
+    ],
+    "oneLiner": "斜向上抛出只受重力"
+  },
+  {
+    "id": "k063",
+    "name": "线速度",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "线速度",
+      "v"
+    ],
+    "oneLiner": "圆周运动瞬时速率"
+  },
+  {
+    "id": "k064",
+    "name": "角速度",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "角速度",
+      "ω"
+    ],
+    "oneLiner": "半径转过的角度与时间比"
+  },
+  {
+    "id": "k065",
+    "name": "向心加速度",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "a=v²/r"
+    ],
+    "oneLiner": "指向圆心的加速度"
+  },
+  {
+    "id": "k066",
+    "name": "向心力",
+    "field": "力学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "F=mv²/r"
+    ],
+    "oneLiner": "提供圆周运动的力"
+  },
+  {
+    "id": "k067",
+    "name": "竖直面轻绳",
+    "field": "力学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "轻绳",
+      "临界速度"
+    ],
+    "oneLiner": "绳系物体竖直面圆周"
+  },
+  {
+    "id": "k068",
+    "name": "竖直面轻杆",
+    "field": "力学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "轻杆",
+      "杆支撑"
+    ],
+    "oneLiner": "杆系物体竖直面圆周"
+  },
+  {
+    "id": "k069",
+    "name": "离心运动",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "离心"
+    ],
+    "oneLiner": "向心力不足时做离心运动"
+  },
+  {
+    "id": "k070",
+    "name": "万有引力定律",
+    "field": "力学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "F=GMm/r²"
+    ],
+    "oneLiner": "引力与质量积成正比与距离平方成反比"
+  },
+  {
+    "id": "k071",
+    "name": "黄金代换",
+    "field": "力学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "GM=gR²"
+    ],
+    "oneLiner": "地表重力与引力常数关系"
+  },
+  {
+    "id": "k072",
+    "name": "开普勒定律",
+    "field": "力学",
+    "type": "定律",
+    "level": "基础",
+    "tags": [
+      "开普勒"
+    ],
+    "oneLiner": "行星运动三大定律"
+  },
+  {
+    "id": "k073",
+    "name": "卫星速度",
+    "field": "力学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "v=√(GM/r)"
+    ],
+    "oneLiner": "卫星绕中心天体速度"
+  },
+  {
+    "id": "k074",
+    "name": "高轨低速",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "高轨低速长周期"
+    ],
+    "oneLiner": "轨道越高速度越小周期越长"
+  },
+  {
+    "id": "k075",
+    "name": "第一宇宙速度",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "第一宇宙速度",
+      "7.9km/s"
+    ],
+    "oneLiner": "最小发射速度"
+  },
+  {
+    "id": "k076",
+    "name": "第二宇宙速度",
+    "field": "力学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "第二宇宙速度",
+      "11.2km/s"
+    ],
+    "oneLiner": "脱离地球引力"
+  },
+  {
+    "id": "k077",
+    "name": "同步卫星",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "同步卫星",
+      "24h"
+    ],
+    "oneLiner": "周期与地球自转相同"
+  },
+  {
+    "id": "k078",
+    "name": "卫星变轨",
+    "field": "力学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "变轨",
+      "离心"
+    ],
+    "oneLiner": "卫星轨道转移"
+  },
+  {
+    "id": "k079",
+    "name": "双星",
+    "field": "力学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "双星"
+    ],
+    "oneLiner": "两星绕共同质心运动"
+  },
+  {
+    "id": "k080",
+    "name": "简谐运动",
+    "field": "振动与波",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "简谐",
+      "F=-kx"
+    ],
+    "oneLiner": "回复力与位移成正比反向"
+  },
+  {
+    "id": "k081",
+    "name": "弹簧振子",
+    "field": "振动与波",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "弹簧振子"
+    ],
+    "oneLiner": "弹簧连物体的周期振动"
+  },
+  {
+    "id": "k082",
+    "name": "单摆",
+    "field": "振动与波",
+    "type": "公式",
+    "level": "进阶",
+    "tags": [
+      "T=2π√(L/g)"
+    ],
+    "oneLiner": "周期与摆长平方根成正比"
+  },
+  {
+    "id": "k083",
+    "name": "受迫振动",
+    "field": "振动与波",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "受迫",
+      "共振"
+    ],
+    "oneLiner": "在外界驱动下的振动"
+  },
+  {
+    "id": "k084",
+    "name": "横波纵波",
+    "field": "振动与波",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "横波",
+      "纵波"
+    ],
+    "oneLiner": "波的两种类型"
+  },
+  {
+    "id": "k085",
+    "name": "波速",
+    "field": "振动与波",
+    "type": "公式",
+    "level": "进阶",
+    "tags": [
+      "v=λf"
+    ],
+    "oneLiner": "波速等于波长乘频率"
+  },
+  {
+    "id": "k086",
+    "name": "波的干涉",
+    "field": "振动与波",
+    "type": "概念",
+    "level": "高考",
+    "tags": [
+      "干涉",
+      "加强减弱"
+    ],
+    "oneLiner": "两列相干波叠加"
+  },
+  {
+    "id": "k087",
+    "name": "波的衍射",
+    "field": "振动与波",
+    "type": "概念",
+    "level": "高考",
+    "tags": [
+      "衍射"
+    ],
+    "oneLiner": "波绕过障碍物传播"
+  },
+  {
+    "id": "k088",
+    "name": "多普勒效应",
+    "field": "振动与波",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "多普勒"
+    ],
+    "oneLiner": "相对运动引起频率变化"
+  },
+  {
+    "id": "k089",
+    "name": "库仑定律",
+    "field": "电磁学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "F=kQq/r²"
+    ],
+    "oneLiner": "电荷间力平方反比"
+  },
+  {
+    "id": "k090",
+    "name": "电场强度",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "E=F/q"
+    ],
+    "oneLiner": "电场力的属性"
+  },
+  {
+    "id": "k091",
+    "name": "电场线",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "电场线"
+    ],
+    "oneLiner": "描述电场分布的假想线"
+  },
+  {
+    "id": "k092",
+    "name": "匀强电场",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "进阶",
+    "tags": [
+      "E=U/d"
+    ],
+    "oneLiner": "电势差与场强关系"
+  },
+  {
+    "id": "k093",
+    "name": "电势",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "电势",
+      "φ"
+    ],
+    "oneLiner": "单位正电荷电势能"
+  },
+  {
+    "id": "k094",
+    "name": "电势差",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "电势差",
+      "U"
+    ],
+    "oneLiner": "两点间电势差值"
+  },
+  {
+    "id": "k095",
+    "name": "电势能",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "Ep=qφ"
+    ],
+    "oneLiner": "电荷在电场中的势能"
+  },
+  {
+    "id": "k096",
+    "name": "等势面",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "等势面"
+    ],
+    "oneLiner": "电势相等的点构成的面"
+  },
+  {
+    "id": "k097",
+    "name": "电容",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "进阶",
+    "tags": [
+      "C=Q/U"
+    ],
+    "oneLiner": "电容器容纳电荷能力"
+  },
+  {
+    "id": "k098",
+    "name": "电场加速",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "电场加速",
+      "qU"
+    ],
+    "oneLiner": "带电粒子在电场中被加速"
+  },
+  {
+    "id": "k099",
+    "name": "电场偏转",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "偏转",
+      "类平抛"
+    ],
+    "oneLiner": "带电粒子垂直电场偏转"
+  },
+  {
+    "id": "k100",
+    "name": "欧姆定律",
+    "field": "电磁学",
+    "type": "定律",
+    "level": "基础",
+    "tags": [
+      "I=U/R"
+    ],
+    "oneLiner": "电流电压电阻关系"
+  },
+  {
+    "id": "k101",
+    "name": "电阻定律",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "R=ρL/S"
+    ],
+    "oneLiner": "电阻与长度截面积关系"
+  },
+  {
+    "id": "k102",
+    "name": "串联",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "串联"
+    ],
+    "oneLiner": "元件依次相连"
+  },
+  {
+    "id": "k103",
+    "name": "并联",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "并联"
+    ],
+    "oneLiner": "元件端端分别相连"
+  },
+  {
+    "id": "k104",
+    "name": "电功率",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "P=UI"
+    ],
+    "oneLiner": "电流做功功率"
+  },
+  {
+    "id": "k105",
+    "name": "焦耳定律",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "Q=I²Rt"
+    ],
+    "oneLiner": "电流产生热量"
+  },
+  {
+    "id": "k106",
+    "name": "电动势",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "电动势",
+      "E"
+    ],
+    "oneLiner": "电源转化能量本领"
+  },
+  {
+    "id": "k107",
+    "name": "内阻",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "内阻",
+      "r"
+    ],
+    "oneLiner": "电源内部电阻"
+  },
+  {
+    "id": "k108",
+    "name": "闭合电路欧姆",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "I=E/(R+r)"
+    ],
+    "oneLiner": "全电路电流公式"
+  },
+  {
+    "id": "k109",
+    "name": "路端电压",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "进阶",
+    "tags": [
+      "U=E-Ir"
+    ],
+    "oneLiner": "外电路电压"
+  },
+  {
+    "id": "k110",
+    "name": "最大输出功率",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "最大功率",
+      "R=r"
+    ],
+    "oneLiner": "输出功率最大条件"
+  },
+  {
+    "id": "k111",
+    "name": "含容电路",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "含容"
+    ],
+    "oneLiner": "含电容器电路分析"
+  },
+  {
+    "id": "k112",
+    "name": "电表改装",
+    "field": "电磁学",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "电表改装",
+      "串分压并分流"
+    ],
+    "oneLiner": "电流表改装为电压表"
+  },
+  {
+    "id": "k113",
+    "name": "磁感应强度",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "B=F/IL"
+    ],
+    "oneLiner": "磁场强弱"
+  },
+  {
+    "id": "k114",
+    "name": "安培定则",
+    "field": "电磁学",
+    "type": "定律",
+    "level": "基础",
+    "tags": [
+      "安培定则"
+    ],
+    "oneLiner": "判断电流磁场方向"
+  },
+  {
+    "id": "k115",
+    "name": "安培力",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "基础",
+    "tags": [
+      "F=BIL"
+    ],
+    "oneLiner": "通电导线在磁场中受力"
+  },
+  {
+    "id": "k116",
+    "name": "洛伦兹力",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "f=qvB"
+    ],
+    "oneLiner": "运动电荷在磁场中受力"
+  },
+  {
+    "id": "k117",
+    "name": "回旋半径",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "R=mv/qB"
+    ],
+    "oneLiner": "带电粒子圆周半径"
+  },
+  {
+    "id": "k118",
+    "name": "有界磁场",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "有界磁场"
+    ],
+    "oneLiner": "带电粒子在边界磁场运动"
+  },
+  {
+    "id": "k119",
+    "name": "质谱仪",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "质谱仪"
+    ],
+    "oneLiner": "分离荷质比不同的粒子"
+  },
+  {
+    "id": "k120",
+    "name": "回旋加速器",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "回旋加速器"
+    ],
+    "oneLiner": "交替场加速粒子"
+  },
+  {
+    "id": "k121",
+    "name": "霍尔效应",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "霍尔"
+    ],
+    "oneLiner": "磁场使载流子偏转产生电势"
+  },
+  {
+    "id": "k122",
+    "name": "磁通量",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "Φ=BS"
+    ],
+    "oneLiner": "穿过面的磁感线数"
+  },
+  {
+    "id": "k123",
+    "name": "楞次定律",
+    "field": "电磁学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "楞次",
+      "增反减同"
+    ],
+    "oneLiner": "感应电流阻碍磁通量变化"
+  },
+  {
+    "id": "k124",
+    "name": "法拉第定律",
+    "field": "电磁学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "E=nΔΦ/Δt"
+    ],
+    "oneLiner": "感应电动势与磁通量变化率成正比"
+  },
+  {
+    "id": "k125",
+    "name": "切割电动势",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "E=BLv"
+    ],
+    "oneLiner": "导体切割磁感线产生电动势"
+  },
+  {
+    "id": "k126",
+    "name": "自感",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "自感"
+    ],
+    "oneLiner": "线圈自身电流变化产生感应"
+  },
+  {
+    "id": "k127",
+    "name": "涡流",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "涡流"
+    ],
+    "oneLiner": "感应产生的涡旋状电流"
+  },
+  {
+    "id": "k128",
+    "name": "电磁感应电路",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "感应电路",
+      "等效电源"
+    ],
+    "oneLiner": "电磁感应中的电路分析"
+  },
+  {
+    "id": "k129",
+    "name": "电磁感应力学",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "感应力学"
+    ],
+    "oneLiner": "电磁感应中导体受力"
+  },
+  {
+    "id": "k130",
+    "name": "电磁感应能量",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "高考",
+    "tags": [
+      "感应能量"
+    ],
+    "oneLiner": "电磁感应中的能量转化"
+  },
+  {
+    "id": "k131",
+    "name": "交流电产生",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "交流电",
+      "中性面"
+    ],
+    "oneLiner": "线圈转动产生正弦交流"
+  },
+  {
+    "id": "k132",
+    "name": "瞬时值",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "e=Emsinωt"
+    ],
+    "oneLiner": "交流电瞬时值表达式"
+  },
+  {
+    "id": "k133",
+    "name": "有效值",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "E=Em/√2"
+    ],
+    "oneLiner": "交流电等效直流值"
+  },
+  {
+    "id": "k134",
+    "name": "感抗",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "感抗",
+      "XL"
+    ],
+    "oneLiner": "电感对交流的阻碍"
+  },
+  {
+    "id": "k135",
+    "name": "容抗",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "容抗",
+      "XC"
+    ],
+    "oneLiner": "电容对交流的阻碍"
+  },
+  {
+    "id": "k136",
+    "name": "变压器",
+    "field": "电磁学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "U1/U2=n1/n2"
+    ],
+    "oneLiner": "电压与匝数成正比"
+  },
+  {
+    "id": "k137",
+    "name": "远距离输电",
+    "field": "电磁学",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "输电",
+      "升压降压"
+    ],
+    "oneLiner": "减少输电损耗"
+  },
+  {
+    "id": "k138",
+    "name": "电磁波",
+    "field": "电磁学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "电磁波"
+    ],
+    "oneLiner": "变化的电磁场交替传播"
+  },
+  {
+    "id": "k139",
+    "name": "布朗运动",
+    "field": "热学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "布朗运动"
+    ],
+    "oneLiner": "颗粒被分子碰撞的无规则运动"
+  },
+  {
+    "id": "k140",
+    "name": "分子力",
+    "field": "热学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "分子力"
+    ],
+    "oneLiner": "分子间引力和斥力"
+  },
+  {
+    "id": "k141",
+    "name": "温度",
+    "field": "热学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "温度",
+      "平均动能"
+    ],
+    "oneLiner": "分子平均动能的标志"
+  },
+  {
+    "id": "k142",
+    "name": "内能",
+    "field": "热学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "内能"
+    ],
+    "oneLiner": "分子热运动能量"
+  },
+  {
+    "id": "k143",
+    "name": "玻意耳定律",
+    "field": "热学",
+    "type": "定律",
+    "level": "进阶",
+    "tags": [
+      "p1V1=p2V2"
+    ],
+    "oneLiner": "等温变化"
+  },
+  {
+    "id": "k144",
+    "name": "查理定律",
+    "field": "热学",
+    "type": "定律",
+    "level": "进阶",
+    "tags": [
+      "p1/T1=p2/T2"
+    ],
+    "oneLiner": "等容变化"
+  },
+  {
+    "id": "k145",
+    "name": "盖吕萨克定律",
+    "field": "热学",
+    "type": "定律",
+    "level": "进阶",
+    "tags": [
+      "V1/T1=V2/T2"
+    ],
+    "oneLiner": "等压变化"
+  },
+  {
+    "id": "k146",
+    "name": "理想气体方程",
+    "field": "热学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "pV=nRT"
+    ],
+    "oneLiner": "气体状态参数关系"
+  },
+  {
+    "id": "k147",
+    "name": "热力学第一定律",
+    "field": "热学",
+    "type": "定律",
+    "level": "核心",
+    "tags": [
+      "ΔU=W+Q"
+    ],
+    "oneLiner": "内能变化等于做功加热传递"
+  },
+  {
+    "id": "k148",
+    "name": "热力学第二定律",
+    "field": "热学",
+    "type": "定律",
+    "level": "进阶",
+    "tags": [
+      "熵",
+      "方向"
+    ],
+    "oneLiner": "自然过程有方向性"
+  },
+  {
+    "id": "k149",
+    "name": "反射定律",
+    "field": "光学",
+    "type": "定律",
+    "level": "基础",
+    "tags": [
+      "反射"
+    ],
+    "oneLiner": "反射角等于入射角"
+  },
+  {
+    "id": "k150",
+    "name": "折射定律",
+    "field": "光学",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "n=sinθ1/sinθ2"
+    ],
+    "oneLiner": "折射角与入射角关系"
+  },
+  {
+    "id": "k151",
+    "name": "折射率",
+    "field": "光学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "n=c/v"
+    ],
+    "oneLiner": "介质对光的折射能力"
+  },
+  {
+    "id": "k152",
+    "name": "全反射",
+    "field": "光学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "全反射",
+      "临界角"
+    ],
+    "oneLiner": "光密到光疏全部反射"
+  },
+  {
+    "id": "k153",
+    "name": "双缝干涉",
+    "field": "光学",
+    "type": "概念",
+    "level": "高考",
+    "tags": [
+      "Δx=Lλ/d"
+    ],
+    "oneLiner": "双缝条纹间距与波长关系"
+  },
+  {
+    "id": "k154",
+    "name": "薄膜干涉",
+    "field": "光学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "薄膜干涉"
+    ],
+    "oneLiner": "薄膜上下表面光干涉"
+  },
+  {
+    "id": "k155",
+    "name": "光的衍射",
+    "field": "光学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "衍射",
+      "单缝"
+    ],
+    "oneLiner": "光绕过障碍物"
+  },
+  {
+    "id": "k156",
+    "name": "偏振",
+    "field": "光学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "偏振"
+    ],
+    "oneLiner": "光振动方向受限"
+  },
+  {
+    "id": "k157",
+    "name": "光电效应",
+    "field": "光学",
+    "type": "概念",
+    "level": "高考",
+    "tags": [
+      "光电效应"
+    ],
+    "oneLiner": "光照射金属发射电子"
+  },
+  {
+    "id": "k158",
+    "name": "光电效应方程",
+    "field": "光学",
+    "type": "公式",
+    "level": "高考",
+    "tags": [
+      "Ek=hν-W0"
+    ],
+    "oneLiner": "光子能量减逸出功等于最大初动能"
+  },
+  {
+    "id": "k159",
+    "name": "光子",
+    "field": "光学",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "E=hν"
+    ],
+    "oneLiner": "光的最小能量单元"
+  },
+  {
+    "id": "k160",
+    "name": "波粒二象性",
+    "field": "光学",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "波粒二象性"
+    ],
+    "oneLiner": "光既是波又是粒子"
+  },
+  {
+    "id": "k161",
+    "name": "α散射",
+    "field": "原子物理",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "α散射",
+      "卢瑟福"
+    ],
+    "oneLiner": "α粒子轰击金箔发现原子核"
+  },
+  {
+    "id": "k162",
+    "name": "玻尔模型",
+    "field": "原子物理",
+    "type": "模型",
+    "level": "进阶",
+    "tags": [
+      "玻尔",
+      "能级"
+    ],
+    "oneLiner": "原子能量量子化"
+  },
+  {
+    "id": "k163",
+    "name": "能级跃迁",
+    "field": "原子物理",
+    "type": "公式",
+    "level": "进阶",
+    "tags": [
+      "hν=Em-En"
+    ],
+    "oneLiner": "原子跃迁辐射或吸收光子"
+  },
+  {
+    "id": "k164",
+    "name": "氢光谱",
+    "field": "原子物理",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "氢光谱"
+    ],
+    "oneLiner": "氢原子特征谱线"
+  },
+  {
+    "id": "k165",
+    "name": "天然放射",
+    "field": "原子物理",
+    "type": "概念",
+    "level": "基础",
+    "tags": [
+      "α",
+      "β",
+      "γ"
+    ],
+    "oneLiner": "原子核自发放射射线"
+  },
+  {
+    "id": "k166",
+    "name": "半衰期",
+    "field": "原子物理",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "半衰期"
+    ],
+    "oneLiner": "半数原子衰变所需时间"
+  },
+  {
+    "id": "k167",
+    "name": "核反应",
+    "field": "原子物理",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "核反应"
+    ],
+    "oneLiner": "原子核被粒子轰击变化"
+  },
+  {
+    "id": "k168",
+    "name": "核裂变",
+    "field": "原子物理",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "裂变",
+      "链式"
+    ],
+    "oneLiner": "重核分裂释放核能"
+  },
+  {
+    "id": "k169",
+    "name": "核聚变",
+    "field": "原子物理",
+    "type": "概念",
+    "level": "进阶",
+    "tags": [
+      "聚变"
+    ],
+    "oneLiner": "轻核结合释放核能"
+  },
+  {
+    "id": "k170",
+    "name": "质能方程",
+    "field": "原子物理",
+    "type": "公式",
+    "level": "核心",
+    "tags": [
+      "E=mc²"
+    ],
+    "oneLiner": "质量与能量等价"
+  },
+  {
+    "id": "k171",
+    "name": "打点计时器",
+    "field": "实验",
+    "type": "方法",
+    "level": "基础",
+    "tags": [
+      "打点计时器"
+    ],
+    "oneLiner": "通过纸带分析运动"
+  },
+  {
+    "id": "k172",
+    "name": "验证牛顿第二定律",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "验证F=ma"
+    ],
+    "oneLiner": "实验验证a与F/m关系"
+  },
+  {
+    "id": "k173",
+    "name": "验证机械能守恒",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "验证机械能守恒"
+    ],
+    "oneLiner": "验证重力做功时机械能守恒"
+  },
+  {
+    "id": "k174",
+    "name": "验证动量守恒",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "验证动量守恒"
+    ],
+    "oneLiner": "验证碰撞中动量守恒"
+  },
+  {
+    "id": "k175",
+    "name": "平抛运动实验",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "平抛实验"
+    ],
+    "oneLiner": "研究平抛运动规律"
+  },
+  {
+    "id": "k176",
+    "name": "单摆测重力加速度",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "单摆测g"
+    ],
+    "oneLiner": "利用单摆周期测g"
+  },
+  {
+    "id": "k177",
+    "name": "伏安法测电阻",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "伏安法"
+    ],
+    "oneLiner": "电压电流表测电阻"
+  },
+  {
+    "id": "k178",
+    "name": "分压限流接法",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "分压",
+      "限流"
+    ],
+    "oneLiner": "滑线变阻器接法"
+  },
+  {
+    "id": "k179",
+    "name": "测电源电动势内阻",
+    "field": "实验",
+    "type": "方法",
+    "level": "高考",
+    "tags": [
+      "测电源",
+      "E",
+      "r"
+    ],
+    "oneLiner": "实验测电池参数"
+  },
+  {
+    "id": "k180",
+    "name": "半偏法",
+    "field": "实验",
+    "type": "方法",
+    "level": "进阶",
+    "tags": [
+      "半偏法"
+    ],
+    "oneLiner": "测电表内阻近似方法"
+  },
+  {
+    "id": "k181",
+    "name": "游标卡尺",
+    "field": "实验",
+    "type": "方法",
+    "level": "基础",
+    "tags": [
+      "游标卡尺"
+    ],
+    "oneLiner": "测量长度精密工具"
+  },
+  {
+    "id": "k182",
+    "name": "螺旋测微器",
+    "field": "实验",
+    "type": "方法",
+    "level": "基础",
+    "tags": [
+      "螺旋测微器"
+    ],
+    "oneLiner": "测微小长度精密工具"
+  }
+];
+
+
+function reSearch(q) { generateSummary(q); }
 var PHYSICS_QUOTES=["\"如果我看得更远，那是因为我站在巨人的肩膀上。\" — 牛顿","\"给我一个支点，我可以撬动整个地球。\" — 阿基米德","\"宇宙最不可理解的事情是它是可以被理解的。\" — 爱因斯坦","\"想象力比知识更重要。\" — 爱因斯坦","\"不要停止提问。\" — 爱因斯坦","\"物理定律是上帝思想的印记。\" — 开普勒","\"在科学上，每一条道路都应该走一走。\" — 法拉第","\"万有引力、电磁力、强力和弱力，宇宙就靠这四种力。\"","\"F=ma，这可能是你人生中最重要的一条方程。\"","\"物理不只是公式，它是描述宇宙的语言。\"","\"理解物理，就是理解世界如何运作。\"","\"力是改变物体运动状态的原因，而不是维持运动的原因。\"","\"每一个物理公式背后，都有一个精彩的故事。\"","\"自然界喜欢简单。\" — 牛顿","\"宇宙中最不可理解的事情，是它居然是可以被理解的。\" — 爱因斯坦"];
 var PHYSICS_QUOTES_INDEX=0;
 function showNextQuote(){var qt=document.getElementById('quoteText');if(!qt)return;qt.textContent=PHYSICS_QUOTES[PHYSICS_QUOTES_INDEX];PHYSICS_QUOTES_INDEX=(PHYSICS_QUOTES_INDEX+1)%PHYSICS_QUOTES.length;}setTimeout(function(){showNextQuote();setInterval(showNextQuote,8000);},500);
+
+
+
 
 
 
