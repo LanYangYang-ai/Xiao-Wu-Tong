@@ -2726,16 +2726,15 @@ function generateSummary(goal) {
       
       for(var f in fields) {
         html += '<div class="kd-section">';
-        html += '<div class="kd-field'>' + f + "</div><div class="kd-cards">';
+        html += '<div class="kd-field">' + f + '</div><div class="kd-cards">';
         for(var i=0;i<fields[f].length;i++) {
           var k = fields[f][i];
           html += '<div class="kd-card">';
-          html += '<div class="kd-name">" + k.name + "</div>';
+          html += '<div class="kd-name">' + k.name + '</div>';
           html += '<div class="kd-meta">';
           var typeLabel = k.type || "";
           var levelLabel = k.level || "";
           if(typeLabel) html += '<span class="kd-tag kd-tag-type">' + typeLabel + '</span>';
-          if(levelLabel) html += '<span class="kd-tag kd-tag-level">' + levelLabel + '</span>';
           if(levelLabel) html += '<span class="kd-tag kd-tag-level">' + levelLabel + '</span>';
           if(k.oneLiner) html += '<div class="kd-desc">' + k.oneLiner + '</div>';
           html += "</div>";
@@ -2755,15 +2754,15 @@ function generateSummary(goal) {
         var mod = LOGIC_TREES[modName];
         var steps = mod.steps || [];
         html += '<div class="summary-module">';
-        html += '<div class="summary-module-title" style="font-size:17px;font-weight:600;color:#27ae60;margin-bottom:4px;">\u{1F539} " + modName + "</div>';
-        html += '<div class="summary-intro" style="font-size:13px;color:#7f8c8d;margin-bottom:12px;font-style:italic;">" + (mod.intro || "") + "</div>';
+        html += '<div class="summary-module-title" style="font-size:17px;font-weight:600;color:#27ae60;margin-bottom:4px;">\u{1F539} ' + modName + '</div>';
+        html += '<div class="summary-intro" style="font-size:13px;color:#7f8c8d;margin-bottom:12px;font-style:italic;">' + (mod.intro || '') + '</div>';
         html += '<div class="summary-steps">';
         for(var s=0; s<steps.length; s++) {
           var st = steps[s]; if(!st) continue;
           html += '<div class="summary-step" style="padding:10px 0;border-bottom:1px solid #f0f0f0;">';
-          html += '<div class="summary-step-name" style="font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:2px;">" + st.name + "</div>';
-          html += '<div class="summary-step-desc" style="font-size:13px;color:#555;line-height:1.6;">" + st.desc + "</div>';
-          if(st.tip) html += '<div class="summary-step-tip" style="font-size:12px;color:#e67e22;margin-top:4px;padding:5px 10px;background:#fef9e7;border-radius:6px;">\u{26A0} " + st.tip + "</div>';
+          html += '<div class="summary-step-name" style="font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:2px;">' + st.name + '</div>';
+          html += '<div class="summary-step-desc" style="font-size:13px;color:#555;line-height:1.6;">' + st.desc + '</div>';
+          if(st.tip) html += '<div class="summary-step-tip" style="font-size:12px;color:#e67e22;margin-top:4px;padding:5px 10px;background:#fef9e7;border-radius:6px;">\u26A0 ' + st.tip + '</div>';
           html += "</div>";
         }
         html += "</div></div>";
@@ -2836,28 +2835,86 @@ function updateStudyTimer() {
   var timers = document.querySelectorAll('.study-timer');
   for(var j=0;j<timers.length;j++) timers[j].textContent = "\u23F3 " + ts + " \u00B7 \u5DF2\u4E13\u6CE8 " + min + " \u5206\u949F";
 }
-var AUDIO_ELEMENTS = {};
+var STUDY_AUDIO_CTX = null;
+var STUDY_AUDIO_NODES = [];
+
+function ensureStudyAudioContext() {
+  if(!STUDY_AUDIO_CTX) {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    STUDY_AUDIO_CTX = new AC();
+  }
+  if(STUDY_AUDIO_CTX.state === "suspended") {
+    STUDY_AUDIO_CTX.resume();
+  }
+  return STUDY_AUDIO_CTX;
+}
+
+function makeNoiseBuffer(ctx, seconds, brown) {
+  var len = Math.floor(ctx.sampleRate * seconds);
+  var buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+  var data = buffer.getChannelData(0);
+  var last = 0;
+  for(var i=0;i<len;i++) {
+    var white = Math.random()*2-1;
+    if(brown) {
+      last = (last + 0.02*white)/1.02;
+      data[i] = last*3.5;
+    } else {
+      data[i] = white;
+    }
+  }
+  return buffer;
+}
 
 function playNoise(type) {
   stopNoise();
-  var src = "";
-  if(type === "gravity") { src = "audio/gravity.mp3"; STUDY_NOISE = "gravity"; }
-  else if(type === "star") { src = "audio/star.mp3"; STUDY_NOISE = "star"; }
-  else if(type === "silence") { src = "audio/silence.mp3"; STUDY_NOISE = "silence"; }
-  if(!src) return;
-  var audio = document.getElementById("studyAudio");
-  if(audio) {
-    audio.src = src; audio.loop = true; audio.volume = 0.3;
-    audio.play().catch(function(){});
-    var btns = document.querySelectorAll(".noise-btn");
-    for(var i=0;i<btns.length;i++) btns[i].classList.remove("noise-active");
-    var btn = document.getElementById("noise-" + type);
-    if(btn) btn.classList.add("noise-active");
+  var ctx = ensureStudyAudioContext();
+  if(!ctx) return;
+  var source = ctx.createBufferSource();
+  var gain = ctx.createGain();
+  var filter = ctx.createBiquadFilter();
+  if(type === "gravity") {
+    source.buffer = makeNoiseBuffer(ctx, 3, true);
+    filter.type = "lowpass";
+    filter.frequency.value = 180;
+    gain.gain.value = 0.55;
+    STUDY_NOISE = "gravity";
   }
+  else if(type === "star") {
+    source.buffer = makeNoiseBuffer(ctx, 3, true);
+    filter.type = "highpass";
+    filter.frequency.value = 900;
+    gain.gain.value = 0.28;
+    STUDY_NOISE = "star";
+  }
+  else if(type === "silence") {
+    source.buffer = makeNoiseBuffer(ctx, 3, true);
+    filter.type = "lowpass";
+    filter.frequency.value = 220;
+    gain.gain.value = 0.05;
+    STUDY_NOISE = "silence";
+  }
+  else {
+    return;
+  }
+  source.loop = true;
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  source.start();
+  STUDY_AUDIO_NODES.push(source, filter, gain);
+  var btns = document.querySelectorAll(".noise-btn");
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove("noise-active");
+  var btn = document.getElementById("noise-" + type);
+  if(btn) btn.classList.add("noise-active");
 }
 function stopNoise() {
-  var audio = document.getElementById("studyAudio");
-  if(audio) { audio.pause(); audio.src = ""; }
+  for(var i=0;i<STUDY_AUDIO_NODES.length;i++) {
+    try { STUDY_AUDIO_NODES[i].stop(); } catch(e) {}
+    try { STUDY_AUDIO_NODES[i].disconnect(); } catch(e) {}
+  }
+  STUDY_AUDIO_NODES = [];
   STUDY_NOISE = null;
   var btns = document.querySelectorAll(".noise-btn");
   for(var i=0;i<btns.length;i++) btns[i].classList.remove("noise-active");
