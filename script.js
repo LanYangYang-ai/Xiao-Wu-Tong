@@ -2774,26 +2774,31 @@ function generateSummary(goal) {
     }
   }
   
-  // 完整知识点参考：从 KNOWLEDGE_FULL 调出对应章节原文
+  // 融合梳理：从 KNOWLEDGE_FULL 调出对应章节的自学要点
   var fullFound = false;
   if(typeof KNOWLEDGE_FULL !== "undefined" && KNOWLEDGE_FULL.length > 0) {
     var fullMatched = [];
     for(var fi=0; fi<KNOWLEDGE_FULL.length; fi++) {
       var sec = KNOWLEDGE_FULL[fi];
       if(!sec) continue;
-      var hay = (sec.title || "") + "\n" + (sec.text || "");
+      var hay = (sec.title || "") + "\n" + ((sec.notes || []).join("\n"));
       if(hay.toLowerCase().indexOf(input) >= 0) fullMatched.push(sec);
     }
     if(fullMatched.length > 0) {
       fullFound = true;
       html += '<div class="kd-section full-section">';
-      html += '<div class="kd-field">\u{1F4DA} \u5B8C\u6574\u77E5\u8BC6\u70B9\u53C2\u8003</div>';
-      html += '<div class="full-intro">\u5DF2\u4ECE\u300A\u9AD8\u4E2D\u7269\u7406\u77E5\u8BC6\u603B\u7ED3\u300B\u8C03\u51FA\u5BF9\u5E94\u7AE0\u8282\u539F\u6587</div>';
+      html += '<div class="kd-field">\u{1F4DA} \u878D\u5408\u68B3\u7406\uFF1A\u7AE0\u8282\u8981\u70B9</div>';
+      html += '<div class="full-intro">\u5DF2\u5C06\u4E0E\u76EE\u6807\u76F8\u5173\u7684\u7AE0\u8282\u91CD\u65B0\u7EC4\u7EC7\u4E3A\u81EA\u5B66\u590D\u4E60\u8981\u70B9</div>';
       for(var fi=0; fi<fullMatched.length; fi++) {
         var sec = fullMatched[fi];
         html += '<details class="full-knowledge-card"' + (fi === 0 ? ' open' : '') + '>';
-        html += '<summary>' + escHtml(sec.title) + '<span class="full-pages">\u7B2C ' + sec.startPage + '-' + sec.endPage + ' \u9875</span></summary>';
-        html += '<div class="full-knowledge-text">' + escHtml(sec.text) + '</div>';
+        html += '<summary>' + escHtml(sec.title);
+        if(sec.startPage) html += '<span class="full-pages">\u7B2C ' + sec.startPage + '-' + sec.endPage + ' \u9875</span>';
+        html += '</summary>';
+        html += '<div class="full-knowledge-text"><ul>';
+        var notes = sec.notes || [];
+        for(var ni=0; ni<notes.length; ni++) html += '<li>' + escHtml(notes[ni]) + '</li>';
+        html += '</ul></div>';
         html += '</details>';
       }
       html += '</div>';
