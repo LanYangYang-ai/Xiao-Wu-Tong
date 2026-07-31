@@ -178,7 +178,7 @@ var KNOWLEDGE_TREE = {branches:[
 {name:"游标卡尺读数",bili:"游标卡尺"},{name:"螺旋测微器读数",bili:"螺旋测微器"},{name:"电流表电压表读数",bili:"电流表 电压表 读数"}]}]}
 ]};
 </script>
-<script src="script.js?v=5"></script>
+<script src="script.js?v=6"></script>
 <div id="quizContainer" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:10000;pointer-events:none"></div>
 
 <!-- 自习室按钮 -->
@@ -232,11 +232,12 @@ var KNOWLEDGE_TREE = {branches:[
   <div id="summaryContent" style="max-width:650px;margin:0 auto;padding:24px 16px 80px;"></div>
 </div>
 
-<!-- 白噪音音频（用户自行准备音频文件） -->
+<!-- 白噪音由 Web Audio 生成，无需外部音频文件 -->
 <audio id="studyAudio" preload="none"></audio>
 
 </body>
 </html>
+
 
 
 
