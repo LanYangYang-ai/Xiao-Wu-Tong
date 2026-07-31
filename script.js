@@ -2681,6 +2681,10 @@ function enterSummaryMode(goal) {
 }
 
 
+function escHtml(s) {
+  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
 function generateSummary(goal) {
   var el = document.getElementById("summaryContent");
   if(!el) return;
@@ -2769,6 +2773,33 @@ function generateSummary(goal) {
       }
     }
   }
+  
+  // 完整知识点参考：从 KNOWLEDGE_FULL 调出对应章节原文
+  var fullFound = false;
+  if(typeof KNOWLEDGE_FULL !== "undefined" && KNOWLEDGE_FULL.length > 0) {
+    var fullMatched = [];
+    for(var fi=0; fi<KNOWLEDGE_FULL.length; fi++) {
+      var sec = KNOWLEDGE_FULL[fi];
+      if(!sec) continue;
+      var hay = (sec.title || "") + "\n" + (sec.text || "");
+      if(hay.toLowerCase().indexOf(input) >= 0) fullMatched.push(sec);
+    }
+    if(fullMatched.length > 0) {
+      fullFound = true;
+      html += '<div class="kd-section full-section">';
+      html += '<div class="kd-field">\u{1F4DA} \u5B8C\u6574\u77E5\u8BC6\u70B9\u53C2\u8003</div>';
+      html += '<div class="full-intro">\u5DF2\u4ECE\u300A\u9AD8\u4E2D\u7269\u7406\u77E5\u8BC6\u603B\u7ED3\u300B\u8C03\u51FA\u5BF9\u5E94\u7AE0\u8282\u539F\u6587</div>';
+      for(var fi=0; fi<fullMatched.length; fi++) {
+        var sec = fullMatched[fi];
+        html += '<details class="full-knowledge-card"' + (fi === 0 ? ' open' : '') + '>';
+        html += '<summary>' + escHtml(sec.title) + '<span class="full-pages">\u7B2C ' + sec.startPage + '-' + sec.endPage + ' \u9875</span></summary>';
+        html += '<div class="full-knowledge-text">' + escHtml(sec.text) + '</div>';
+        html += '</details>';
+      }
+      html += '</div>';
+    }
+  }
+  if(fullFound) found = true;
   
   // 3. 无匹配
   if(!found) {
